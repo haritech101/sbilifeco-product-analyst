@@ -7,3 +7,7 @@ class IngestFlow(Protocol):
     async def ingest(
         self, source: str | bytes | bytearray | TextIOBase | BufferedIOBase | RawIOBase
     ) -> Response[None]: ...
+
+
+class IngestFlowListener(Protocol):
+    async def on_ingest(self, response: Response[None]) -> None: ...
