@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import Protocol
 from sbilifeco.models.base import Response
 from pydantic import BaseModel
@@ -8,7 +9,14 @@ class RatedAnswer(BaseModel):
     rating: float
 
 
-class IQueryFlow(Protocol):
+class BaseQueryFlow:
+    def __init__(self) -> None:
+        self.listeners: list[IQueryFlowListener] = []
+
+    def add_listener(self, listener: IQueryFlowListener) -> None:
+        """Add a listener to the QueryFlow."""
+        self.listeners.append(listener)
+
     async def request_search(self) -> Response[str]:
         """Request a search request ID for performing queries."""
         ...
@@ -27,7 +35,7 @@ class IQueryFlow(Protocol):
         ...
 
 
-class QueryFlowListener(Protocol):
+class IQueryFlowListener(Protocol):
     async def on_request_search(self, response: Response[str]) -> None:
         """Handle the event that a search request ID has been obtained."""
         """Args:

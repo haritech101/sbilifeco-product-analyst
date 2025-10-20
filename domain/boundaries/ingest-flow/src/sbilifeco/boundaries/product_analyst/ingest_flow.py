@@ -1,9 +1,19 @@
+from __future__ import annotations
 from typing import Protocol
 from sbilifeco.models.base import Response
 from io import BufferedIOBase, RawIOBase, TextIOBase
 
 
-class IngestFlow(Protocol):
+class BaseIngestFlow:
+    def __init__(self) -> None:
+        self.listeners: list[IngestFlowListener] = []
+
+    def add_listener(self, listener: IngestFlowListener) -> None:
+        """Add a listener to the ingest flow."""
+        """Args:
+            listener: an instance of IngestFlowListener to be added"""
+        self.listeners.append(listener)
+
     async def request_ingestion(self) -> Response[str]:
         """Request an ingestion operation."""
         """Returns: a response containing a service generated request ID"""
