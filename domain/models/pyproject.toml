@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project]
+name = "product-analyst-models"
+version = "0.1.0"
+description = "Model classes for product analyst application"
+dependencies = [
+    "pydantic>=2.11.9"
+]
