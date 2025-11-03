@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 where = ["src"]
 
 [project]
-name = "product-analyst-boundary-vectoriser"
+name = "sbilifeco-boundary-vectoriser"
 version = "0.1.0"
 description = "Contract for building a vectoriser / embedder"
 dependencies = [

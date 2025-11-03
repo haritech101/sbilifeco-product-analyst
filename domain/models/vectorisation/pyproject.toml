@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 where = ["src"]
 
 [project]
-name = "product-analyst-models"
+name = "sbilifeco-models-vectorisation"
 version = "0.1.0"
 description = "Model classes for product analyst application"
 dependencies = [

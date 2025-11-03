@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Any, Protocol
 from sbilifeco.models.base import Response
-from sbilifeco.models.product_analyst import VectorisedRecord
+from sbilifeco.models.vectorisation import VectorisedRecord
 
 
 class VectorRepoListener(Protocol): ...

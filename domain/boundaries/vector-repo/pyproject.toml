@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 where = ["src"]
 
 [project]
-name = "product-analyst-boundary-vector-repo"
+name = "sbilifeco-boundary-vector-repo"
 version = "0.1.0"
 description = "Contract for building vector repositories to store and retrieve data and their vectors"
 dependencies = [
