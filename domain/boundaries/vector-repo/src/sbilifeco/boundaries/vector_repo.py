@@ -30,3 +30,8 @@ class BaseVectorRepo:
         self, criteria: dict[str, Any]
     ) -> Response[list[VectorisedRecord]]:
         raise NotImplementedError()
+
+    async def search_by_vector(
+        self, vector: list[float], num_results: int = 5
+    ) -> Response[list[VectorisedRecord]]:
+        raise NotImplementedError()
