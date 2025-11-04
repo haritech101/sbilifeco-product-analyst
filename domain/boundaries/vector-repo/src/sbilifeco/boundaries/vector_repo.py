@@ -11,7 +11,7 @@ class BaseVectorRepo:
     def __init__(self):
         self.listeners: list[VectorRepoListener] = []
 
-    def add_listener(self, listener: VectorRepoListener) -> None:
+    def add_vector_repo_listener(self, listener: VectorRepoListener) -> None:
         self.listeners.append(listener)
 
     async def crupdate(self, record: VectorisedRecord) -> Response[None]:
@@ -28,5 +28,10 @@ class BaseVectorRepo:
 
     async def read_by_criteria(
         self, criteria: dict[str, Any]
+    ) -> Response[list[VectorisedRecord]]:
+        raise NotImplementedError()
+
+    async def search_by_vector(
+        self, vector: list[float], num_results: int = 5
     ) -> Response[list[VectorisedRecord]]:
         raise NotImplementedError()
