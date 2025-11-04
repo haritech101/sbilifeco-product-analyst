@@ -7,7 +7,7 @@ class BaseVectoriser:
     def __init__(self):
         self.listeners: list[IVectoriserListener] = []
 
-    def add_listener(self, listener: IVectoriserListener) -> BaseVectoriser:
+    def add_vectoriser_listener(self, listener: IVectoriserListener) -> BaseVectoriser:
         self.listeners.append(listener)
         return self
 
