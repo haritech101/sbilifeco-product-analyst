@@ -9,10 +9,10 @@ class VectorRepoListener(Protocol): ...
 
 class BaseVectorRepo:
     def __init__(self):
-        self.listeners: list[VectorRepoListener] = []
+        self.repo_listeners: list[VectorRepoListener] = []
 
     def add_vector_repo_listener(self, listener: VectorRepoListener) -> None:
-        self.listeners.append(listener)
+        self.repo_listeners.append(listener)
 
     async def crupdate(self, record: VectorisedRecord) -> Response[None]:
         raise NotImplementedError()

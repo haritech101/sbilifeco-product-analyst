@@ -5,10 +5,10 @@ from sbilifeco.models.base import Response
 
 class BaseVectoriser:
     def __init__(self):
-        self.listeners: list[IVectoriserListener] = []
+        self.vectoriser_listeners: list[IVectoriserListener] = []
 
     def add_vectoriser_listener(self, listener: IVectoriserListener) -> BaseVectoriser:
-        self.listeners.append(listener)
+        self.vectoriser_listeners.append(listener)
         return self
 
     async def vectorise(
