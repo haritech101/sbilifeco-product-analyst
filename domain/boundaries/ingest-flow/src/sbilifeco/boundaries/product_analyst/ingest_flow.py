@@ -22,6 +22,7 @@ class BaseIngestFlow:
     async def ingest(
         self,
         ingestion_request: str,
+        title: str,
         source: str | bytes | bytearray | TextIOBase | BufferedIOBase | RawIOBase,
     ) -> Response[None]:
         """Perform an ingestion operation."""
