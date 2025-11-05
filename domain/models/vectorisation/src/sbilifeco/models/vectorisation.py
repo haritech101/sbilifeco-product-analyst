@@ -8,6 +8,7 @@ class RecordMetadata(BaseModel):
 
 class VectorisedRecord(BaseModel):
     id: str
-    document: str | bytes | bytearray | None = None
+    document: str | bytes | None = None
     vector: list[int | float] = []
     metadata: RecordMetadata = RecordMetadata()
+    score: float = 0.0
