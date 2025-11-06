@@ -1,0 +1,12 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project]
+name = "sbilifeco-productanalyst-paths-query-flow"
+version = "0.1.0"
+description = "Paths for query flow microservice in product analyst application"
+dependencies = []
