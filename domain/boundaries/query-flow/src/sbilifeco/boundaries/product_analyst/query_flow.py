@@ -22,7 +22,7 @@ class BaseQueryFlow:
         ...
 
     async def search(
-        self, search_request_id: str, query: str
+        self, search_request_id: str, query: str, num_results: int = 5
     ) -> Response[list[RatedAnswer]]:
         """Perform a search based on the provided query and return a list of rated answers."""
         """
