@@ -4,9 +4,14 @@ from sbilifeco.models.base import Response
 from pydantic import BaseModel
 
 
+class RatedSource(BaseModel):
+    source: str = ""
+    rating: float = 0.0
+
+
 class RatedAnswer(BaseModel):
-    answer: str
-    rating: float
+    answer: str = ""
+    sources: list[RatedSource] = []
 
 
 class BaseQueryFlow:
@@ -22,8 +27,8 @@ class BaseQueryFlow:
         ...
 
     async def search(
-        self, search_request_id: str, query: str
-    ) -> Response[list[RatedAnswer]]:
+        self, search_request_id: str, query: str, num_results: int = 5
+    ) -> Response[RatedAnswer]:
         """Perform a search based on the provided query and return a list of rated answers."""
         """
         Args:
@@ -42,7 +47,7 @@ class IQueryFlowListener(Protocol):
             response: the response containing the search request ID or error information"""
         ...
 
-    async def on_search(self, response: Response[list[RatedAnswer]]) -> None:
+    async def on_search(self, response: Response[RatedAnswer]) -> None:
         """Handle the event that a search has been performed."""
         """Args:
             response: the response containing the list of rated answers or error information"""
