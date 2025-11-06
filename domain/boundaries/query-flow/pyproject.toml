@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 where = ["src"]
 
 [project]
-name = "product-analyst-boundary-query-flow"
+name = "sbilifeco-productanalyst-boundary-query-flow"
 version = "0.1.0"
 description = "description"
 dependencies = [
