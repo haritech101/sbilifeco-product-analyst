@@ -26,7 +26,7 @@ class Test(IsolatedAsyncioTestCase):
     async def test_read_chunk(self) -> None:
         # Arrange
         read_response = await self.service.read_material(
-            ".local/saral-jeevan-beema.pdf"
+            "file://.local/saral-jeevan-beema.pdf"
         )
         assert read_response.payload is not None
         material_id = read_response.payload
