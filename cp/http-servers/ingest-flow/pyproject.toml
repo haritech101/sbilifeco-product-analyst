@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project]
+name = "sbilifeco-productanalyst-http-server-ingest-flow"
+version = "0.1.0"
+description = "HTTP server to serve requests for ingest flow"
+dependencies = [
+    "fastapi>=0.116.1",
+    "python-multipart>=0.0.20",
+    "sbilifeco-models-base>=0.1.3",
+    "sbilifeco-cp-http-server>=0.1.1",
+    "sbilifeco-productanalyst-boundary-ingest-flow>=0.1.0",
+    "sbilifeco-productanalyst-paths-ingest-flow>=0.1.0",
+]
