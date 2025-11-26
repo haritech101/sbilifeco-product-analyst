@@ -1,13 +1,15 @@
 from __future__ import annotations
 
-from io import BufferedIOBase, RawIOBase, TextIOBase
+from io import BufferedIOBase, RawIOBase, TextIOBase, BytesIO
 from pathlib import Path
 from typing import AsyncGenerator, cast
 from uuid import uuid4
 
 from docling.document_converter import DocumentConverter
+from docling.datamodel.document import ConversionResult
 from docling_core.types.doc.document import DoclingDocument, GroupItem, TableItem
 from docling_core.types.doc.labels import DocItemLabel, GroupLabel
+from docling_core.types.io import DocumentStream
 from sbilifeco.boundaries.material_reader import BaseMaterialReader
 from sbilifeco.models.base import Response
 
@@ -29,25 +31,43 @@ class DoclingReader(BaseMaterialReader):
             material_id = str(uuid4())
             converter = DocumentConverter()
 
-            if isinstance(material, str):
-                if material.startswith("file://"):
-                    the_path = Path(material[7:])
-                    if not the_path.exists():
-                        return Response.fail("Invalid material")
+            if isinstance(
+                material, (str, bytes, bytearray, RawIOBase, BufferedIOBase, TextIOBase)
+            ):
+                result: ConversionResult | None = None
 
-                    result = converter.convert(the_path)
-                    if result.errors:
-                        return Response.fail(
-                            f"Conversion failed: {";".join([e.error_message for e in result.errors])}"
+                if isinstance(material, str):
+                    if material.startswith("file://"):
+                        the_path = Path(material[7:])
+                        if not the_path.exists():
+                            return Response.fail("Invalid material")
+
+                        result = converter.convert(the_path)
+                    else:
+                        result = converter.convert(material)
+                elif isinstance(material, (bytes, bytearray)):
+                    stream = DocumentStream(name=material_id, stream=BytesIO(material))
+                    result = converter.convert(stream)
+                elif isinstance(material, TextIOBase):
+                    result = converter.convert(material.read())
+                elif isinstance(material, (RawIOBase, BufferedIOBase)):
+                    result = converter.convert(
+                        DocumentStream(
+                            name=material_id, stream=BytesIO(material.read())
                         )
-
-                    print(
-                        f"{material_id} parsed with confidence {result.confidence.layout_score}"
                     )
 
-                    self.chunks[material_id] = self._get_next_chunk(result.document)
+                if result.errors:
+                    return Response.fail(
+                        f"Conversion failed: {";".join([e.error_message for e in result.errors])}"
+                    )
 
-                    return Response.ok(material_id)
+                print(
+                    f"{material_id} parsed with confidence {result.confidence.layout_score}"
+                )
+
+                self.chunks[material_id] = self._get_next_chunk(result.document)
+                return Response.ok(material_id)
 
             return Response.fail("Unsupported material type", 400)
         except Exception as e:
