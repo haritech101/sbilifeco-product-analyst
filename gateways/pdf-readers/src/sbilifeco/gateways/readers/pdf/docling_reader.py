@@ -30,25 +30,26 @@ class DoclingReader(BaseMaterialReader):
             converter = DocumentConverter()
 
             if isinstance(material, str):
-                the_path = Path(material)
-                if not the_path.exists():
-                    return Response.fail("Invalid material")
+                if material.startswith("file://"):
+                    the_path = Path(material[7:])
+                    if not the_path.exists():
+                        return Response.fail("Invalid material")
 
-                result = converter.convert(the_path)
-                if result.errors:
-                    return Response.fail(
-                        f"Conversion failed: {";".join([e.error_message for e in result.errors])}"
+                    result = converter.convert(the_path)
+                    if result.errors:
+                        return Response.fail(
+                            f"Conversion failed: {";".join([e.error_message for e in result.errors])}"
+                        )
+
+                    print(
+                        f"{material_id} parsed with confidence {result.confidence.layout_score}"
                     )
 
-                print(
-                    f"{material_id} parsed with confidence {result.confidence.layout_score}"
-                )
+                    self.chunks[material_id] = self._get_next_chunk(result.document)
 
-                self.chunks[material_id] = self._get_next_chunk(result.document)
+                    return Response.ok(material_id)
 
-                return Response.ok(material_id)
-
-            return Response.fail("Unsupported material type")
+            return Response.fail("Unsupported material type", 400)
         except Exception as e:
             return Response.error(e)
 

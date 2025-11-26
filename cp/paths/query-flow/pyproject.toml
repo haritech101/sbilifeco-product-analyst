@@ -6,10 +6,7 @@ build-backend = "setuptools.build_meta"
 where = ["src"]
 
 [project]
-name = "sbilifeco-productanalyst-boundary-query-flow"
+name = "sbilifeco-productanalyst-paths-query-flow"
 version = "0.1.0"
-description = "description"
-dependencies = [
-    "pydantic>=2.11.9",
-    "sbilifeco-models-base>=0.1.3"
-]
+description = "Paths for query flow microservice in product analyst application"
+dependencies = []

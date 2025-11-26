@@ -6,10 +6,7 @@ build-backend = "setuptools.build_meta"
 where = ["src"]
 
 [project]
-name = "sbilifeco-productanalyst-boundary-query-flow"
+name = "sbilifeco-paths-material-reader"
 version = "0.1.0"
-description = "description"
-dependencies = [
-    "pydantic>=2.11.9",
-    "sbilifeco-models-base>=0.1.3"
-]
+description = "Paths for material reader microservice"
+dependencies = []
