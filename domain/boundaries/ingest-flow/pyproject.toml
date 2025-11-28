@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 where = ["src"]
 
 [project]
-name = "product-analyst-boundary-ingest-flow"
+name = "sbilifeco-productanalyst-boundary-ingest-flow"
 version = "0.1.0"
 description = "Flow for ingestion of content"
 dependencies = [

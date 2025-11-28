@@ -1,0 +1,12 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project]
+name = "sbilifeco-paths-vectoriser"
+version = "0.1.0"
+description = "Paths for vectoriser microservice"
+dependencies = []
