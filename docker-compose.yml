@@ -23,3 +23,20 @@ services:
         restart: always
         labels:
             - traefik.http.routers.material-reader.rule=PathPrefix(`/api/v1/materials`)
+    chromadb-gateway:
+        image: sbilife/chromadb-gateway
+        environment:
+            - HTTP_PORT_VECTORISER=80
+            - HTTP_PORT_VECTOR_REPO=81
+            - DB_PATH=/var/lib/chromadb
+            - COLLECTION_NAME=material
+        restart: always
+        volumes:
+            - ./.local/.chromadb:/var/lib/chromadb
+        labels:
+            - traefik.http.routers.vectoriser.rule=PathPrefix(`/api/v1/vectors`)
+            - traefik.http.routers.vectoriser.service=vectoriser
+            - traefik.http.services.vectoriser.loadBalancer.server.url=http://chromadb-gateway
+            - traefik.http.routers.vector-repo.rule=PathPrefix(`/api/v1/vectorised-data`)
+            - traefik.http.routers.vector-repo.service=vector-repo
+            - traefik.http.services.vector-repo.loadBalancer.server.url=http://chromadb-gateway:81
