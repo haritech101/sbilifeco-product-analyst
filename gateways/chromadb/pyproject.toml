@@ -12,5 +12,6 @@ description = "Gateway to ChromaDB for both performing embedding and storing emb
 dependencies = [
     "chromadb>=1.3.2",
     "sbilifeco-models-base>=0.1.3",
-    "sbilifeco-boundary-vectoriser>=0.1.0"
+    "sbilifeco-boundary-vectoriser>=0.1.0",
+    "sbilifeco-boundary-vector-repo>=0.1.0"
 ]
