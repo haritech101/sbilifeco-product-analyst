@@ -3,14 +3,9 @@ from __future__ import annotations
 from io import BufferedIOBase, RawIOBase, TextIOBase, BytesIO
 from json import load
 from pathlib import Path
-from typing import AsyncGenerator, cast
+from typing import AsyncGenerator
 from uuid import uuid4
 
-from docling.document_converter import DocumentConverter
-from docling.datamodel.document import ConversionResult
-from docling_core.types.doc.document import DoclingDocument, GroupItem, TableItem
-from docling_core.types.doc.labels import DocItemLabel, GroupLabel
-from docling_core.types.io import DocumentStream
 from sbilifeco.boundaries.material_reader import BaseMaterialReader
 from sbilifeco.models.base import Response
 from sbilifeco.cp.common.http.client import HttpClient, Request
