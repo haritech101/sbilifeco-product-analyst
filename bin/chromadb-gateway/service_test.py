@@ -58,10 +58,10 @@ class Test(IsolatedAsyncioTestCase):
 
     async def asyncTearDown(self) -> None:
         # Shutdown the service(s) here
-        # if self.test_type == "unit":
+        if self.test_type == "unit":
+            rmtree(self.db_path)
         #     await self.service.async_shutdown()
         patch.stopall()
-        rmtree(self.db_path)
 
     async def test_vectorise(self) -> None:
         # Arrange
