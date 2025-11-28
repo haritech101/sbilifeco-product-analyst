@@ -10,9 +10,23 @@ class DoclingReaderMicroservice:
     async def run(self) -> None:
         # Env vars
         http_port = int(getenv(EnvVars.http_port, Defaults.http_port))
+        doclingserve_proto = getenv(
+            EnvVars.doclingserve_proto, Defaults.doclingserve_proto
+        )
+        doclingserve_host = getenv(
+            EnvVars.doclingserve_host, Defaults.doclingserve_host
+        )
+        doclingserve_port = int(
+            getenv(EnvVars.doclingserve_port, Defaults.doclingserve_port)
+        )
 
         # Gateways
-        self.reader = DoclingReader()
+        self.reader = (
+            DoclingReader()
+            .set_doclingserve_proto(doclingserve_proto)
+            .set_doclingserve_host(doclingserve_host)
+            .set_doclingserve_port(doclingserve_port)
+        )
 
         # Controllers and presenters
         self.http_server = MaterialReaderHttpServer()
