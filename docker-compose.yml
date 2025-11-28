@@ -1,0 +1,25 @@
+services:
+    traefik:
+        image: traefik:3.6.2
+        restart: always
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+        command:
+            - --api.insecure=true
+            - --providers.docker=true
+        ports:
+            - 11900:80
+            - 11901:8080
+    docling-serve:
+        image: ghcr.io/docling-project/docling-serve-cpu:v1.9.0
+        restart: always
+    docling-reader:
+        image: sbilife/docling-reader:latest
+        environment:
+            - HTTP_PORT:80
+            - DOCLINGSERVE_PROTO=http
+            - DOCLINGSERVE_HOST=docling-serve
+            - DOCLINGSERVE_PORT=5001
+        restart: always
+        labels:
+            - traefik.http.routers.material-reader.rule=PathPrefix(`/api/v1/materials`)

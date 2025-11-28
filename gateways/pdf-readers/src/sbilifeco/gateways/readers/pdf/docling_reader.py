@@ -1,21 +1,41 @@
 from __future__ import annotations
 
-from io import BufferedIOBase, RawIOBase, TextIOBase
+from io import BufferedIOBase, RawIOBase, TextIOBase, BytesIO
+from json import load
 from pathlib import Path
-from typing import AsyncGenerator, cast
+from typing import AsyncGenerator
 from uuid import uuid4
 
-from docling.document_converter import DocumentConverter
-from docling_core.types.doc.document import DoclingDocument, GroupItem, TableItem
-from docling_core.types.doc.labels import DocItemLabel, GroupLabel
 from sbilifeco.boundaries.material_reader import BaseMaterialReader
 from sbilifeco.models.base import Response
+from sbilifeco.cp.common.http.client import HttpClient, Request
 
 
-class DoclingReader(BaseMaterialReader):
+class DoclingPaths:
+    BASE = "/v1"
+    CHUNK_FILE = BASE + "/chunk/hybrid/file"
+
+
+class DoclingReader(BaseMaterialReader, HttpClient):
     def __init__(self):
-        super().__init__()
+        BaseMaterialReader.__init__(self)
+        HttpClient.__init__(self)
+        self.set_proto("http")
+        self.set_host("localhost")
+        self.set_port(80)
         self.chunks: dict[str, AsyncGenerator[str | bytes | bytearray]] = {}
+
+    def set_doclingserve_proto(self, proto: str) -> DoclingReader:
+        self.set_proto(proto)
+        return self
+
+    def set_doclingserve_host(self, host: str) -> DoclingReader:
+        self.set_host(host)
+        return self
+
+    def set_doclingserve_port(self, port: int) -> DoclingReader:
+        self.set_port(port)
+        return self
 
     async def async_init(self) -> None: ...
 
@@ -27,27 +47,58 @@ class DoclingReader(BaseMaterialReader):
     ) -> Response[str]:
         try:
             material_id = str(uuid4())
-            converter = DocumentConverter()
+            # converter = DocumentConverter()
 
-            if isinstance(material, str):
-                if material.startswith("file://"):
-                    the_path = Path(material[7:])
-                    if not the_path.exists():
-                        return Response.fail("Invalid material")
+            if isinstance(
+                material, (str, bytes, bytearray, RawIOBase, BufferedIOBase, TextIOBase)
+            ):
+                # result: ConversionResult | None = None
+                material_as_bytes = b""
 
-                    result = converter.convert(the_path)
-                    if result.errors:
-                        return Response.fail(
-                            f"Conversion failed: {";".join([e.error_message for e in result.errors])}"
+                if isinstance(material, str):
+                    if material.startswith("file://"):
+                        the_path = Path(material[7:])
+                        if not the_path.exists():
+                            return Response.fail("Invalid material")
+
+                        with open(the_path, "rb") as open_material:
+                            material_as_bytes = open_material.read()
+                    else:
+                        material_as_bytes = material.encode()
+                elif isinstance(material, (bytes, bytearray)):
+                    material_as_bytes = bytes(material)
+                elif isinstance(material, TextIOBase):
+                    material_as_bytes = material.read().encode()
+                elif isinstance(material, (RawIOBase, BufferedIOBase)):
+                    material_as_bytes = material.read()
+
+                req = Request(
+                    url=f"{self.url_base}{DoclingPaths.CHUNK_FILE}",
+                    method="POST",
+                    files={
+                        "files": (
+                            f"{material_id}",
+                            material_as_bytes,
+                            "application/octet-stream",
                         )
+                    },
+                )
 
-                    print(
-                        f"{material_id} parsed with confidence {result.confidence.layout_score}"
+                docling_response = await self.request_as_binary(req)
+                if not docling_response.is_success:
+                    return Response.fail(
+                        docling_response.message, docling_response.code
                     )
+                elif not docling_response.payload:
+                    return Response.fail("Docling payload is inexplicably empty", 500)
 
-                    self.chunks[material_id] = self._get_next_chunk(result.document)
+                docling_payload_as_bytes = docling_response.payload
+                docling_payload = load(BytesIO(docling_payload_as_bytes))
 
-                    return Response.ok(material_id)
+                self.chunks[material_id] = self._get_next_chunk(
+                    docling_payload.get("chunks", [])
+                )
+                return Response.ok(material_id)
 
             return Response.fail("Unsupported material type", 400)
         except Exception as e:
@@ -75,46 +126,7 @@ class DoclingReader(BaseMaterialReader):
             return Response.error(e)
 
     async def _get_next_chunk(
-        self, doc: DoclingDocument
+        self, chunks: list[dict]
     ) -> AsyncGenerator[str | bytes | bytearray]:
-        start = -1
-        for i, segment in enumerate(doc.body.children):
-            item = segment.resolve(doc)
-
-            if (
-                item.label in (DocItemLabel.TABLE, DocItemLabel.PICTURE)
-                or item.label in GroupLabel
-            ):
-                if start != -1:
-                    yield "\n".join(
-                        [
-                            segment.resolve(doc).text
-                            for segment in doc.body.children[start:i]
-                        ]
-                    )
-                    start = -1
-
-            if item.label == DocItemLabel.PICTURE:
-                continue
-            elif item.label == DocItemLabel.TABLE:
-                yield cast(TableItem, item).export_to_markdown()
-            elif item.label in GroupLabel:
-                children = cast(GroupItem, item).children
-                yield "\n".join(
-                    [
-                        resolved.text if hasattr(resolved, "text") else ""
-                        for resolved in [
-                            group_item.resolve(doc).text for group_item in children
-                        ]
-                    ]
-                )
-            elif start == -1:
-                start = i
-
-        if start != -1:
-            yield "\n".join(
-                [
-                    segment.resolve(doc).text
-                    for segment in doc.body.children[start : len(doc.body.children)]
-                ]
-            )
+        for chunk in chunks:
+            yield chunk.get("text", "")
