@@ -30,6 +30,6 @@ class VectoriserHttpClient(HttpClient, BaseVectoriser):
             response = await self.request_as_model(req)
 
             # Return
-            return Response.ok(response)
+            return response
         except Exception as e:
             return Response.error(e)
