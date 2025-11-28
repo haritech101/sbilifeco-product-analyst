@@ -11,5 +11,5 @@ version = "0.1.0"
 description = "Contract for building vector repositories to store and retrieve data and their vectors"
 dependencies = [
     "sbilifeco-models-base>=0.1.3",
-    "product-analyst-models>=0.1.0"
+    "sbilifeco-models-vectorisation>=0.1.0"
 ]

@@ -6,7 +6,7 @@ from sbilifeco.boundaries.vector_repo import BaseVectorRepo
 from sbilifeco.cp.common.http.client import HttpClient, Request
 from sbilifeco.cp.vector_repo.paths import VectorRepoPaths
 from sbilifeco.models.base import Response
-from sbilifeco.models.vectorisation import VectorisedRecord
+from sbilifeco.models.vectorisation import VectorisedRecord, RecordMetadata
 
 
 class VectorRepoHttpClient(HttpClient, BaseVectorRepo):
@@ -76,7 +76,12 @@ class VectorRepoHttpClient(HttpClient, BaseVectorRepo):
             response = await self.request_as_model(req)
 
             # Triage
-            ...
+            if response.payload:
+                response.payload = VectorisedRecord.model_validate(response.payload)
+                if response.payload.metadata:
+                    response.payload.metadata = RecordMetadata.model_validate(
+                        response.payload.metadata
+                    )
 
             # Return
             return response
@@ -100,6 +105,9 @@ class VectorRepoHttpClient(HttpClient, BaseVectorRepo):
                 response.payload = [
                     VectorisedRecord.model_validate(map) for map in response.payload
                 ]
+                for record in response.payload:
+                    if record.metadata:
+                        record.metadata = RecordMetadata.model_validate(record.metadata)
 
             # Return
             return response
@@ -123,6 +131,9 @@ class VectorRepoHttpClient(HttpClient, BaseVectorRepo):
                 response.payload = [
                     VectorisedRecord.model_validate(map) for map in response.payload
                 ]
+                for record in response.payload:
+                    if record.metadata:
+                        record.metadata = RecordMetadata.model_validate(record.metadata)
 
             # Return
             return response
