@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project]
+name = "sbilifeco-http-client-vectoriser"
+version = "0.1.0"
+description = "HTTP client to send requests to vectoriser"
+dependencies = [
+    "sbilifeco-cp-http-client>=0.1.2",
+    "sbilifeco-boundary-vectoriser>=0.1.0",
+    "sbilifeco-paths-vectoriser>=0.1.0",
+    "sbilifeco-models-base>=0.1.3"
+]

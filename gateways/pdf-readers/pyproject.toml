@@ -12,6 +12,6 @@ description = "Collection of PDF readers that implement the material reader cont
 dependencies = [
     "sbilifeco-models-base>=0.1.3",
     "sbilifeco-boundary-material-reader>=0.1.0",
-    "docling>=2.60.0",
+    "sbilifeco-cp-http-client>=0.1.2",
     "uuid>=1.30",
 ]

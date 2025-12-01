@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project]
+name = "sbilifeco-http-server-material-reader"
+version = "0.1.1"
+description = "HTTP server to serve requests for material reader"
+dependencies = [
+    "fastapi>=0.116.1",
+    "sbilifeco-models-base>=0.1.3",
+    "sbilifeco-cp-http-server>=0.1.1",
+    "sbilifeco-boundary-material-reader>=0.1.0",
+    "sbilifeco-paths-material-reader>=0.1.0"
+]
