@@ -9,4 +9,9 @@ where = ["src"]
 name = "sbilifeco-http-client-vectoriser"
 version = "0.1.0"
 description = "HTTP client to send requests to vectoriser"
-dependencies = []
+dependencies = [
+    "sbilifeco-cp-http-client>=0.1.2",
+    "sbilifeco-boundary-vectoriser>=0.1.0",
+    "sbilifeco-paths-vectoriser>=0.1.0",
+    "sbilifeco-models-base>=0.1.3"
+]
