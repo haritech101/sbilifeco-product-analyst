@@ -1,0 +1,28 @@
+class EnvVars:
+    test_type = "TEST_TYPE"
+    http_port = "HTTP_PORT"
+    staging_host = "STAGING_HOST"
+    material_reader_proto = "MATERIAL_READER_PROTO"
+    material_reader_host = "MATERIAL_READER_HOST"
+    material_reader_port = "MATERIAL_READER_PORT"
+    vectoriser_proto = "VECTORISER_PROTO"
+    vectoriser_host = "VECTORISER_HOST"
+    vectoriser_port = "VECTORISER_PORT"
+    vector_repo_proto = "VECTOR_REPO_PROTO"
+    vector_repo_host = "VECTOR_REPO_HOST"
+    vector_repo_port = "VECTOR_REPO_PORT"
+
+
+class Defaults:
+    test_type = "unit"  # or "integration" or "staging"
+    http_port = "80"
+    staging_host = "localhost"
+    material_reader_proto = "http"
+    material_reader_host = "localhost"
+    material_reader_port = "80"
+    vectoriser_proto = "http"
+    vectoriser_host = "localhost"
+    vectoriser_port = "80"
+    vector_repo_proto = "http"
+    vector_repo_host = "localhost"
+    vector_repo_port = "80"
