@@ -64,10 +64,14 @@ class IngestFlow(BaseIngestFlow):
             while are_chunks_left:
                 chunk_response = await self.material_reader.read_next_chunk(material_id)
                 if not chunk_response.is_success:
+                    print(chunk_response.message)
                     return Response.fail(chunk_response.message, chunk_response.code)
                 elif chunk_response.payload is None:
+                    print("No more chunks left")
                     are_chunks_left = False
                     continue
+
+                print(f"Chunk {chunk_num} read")
                 chunk = chunk_response.payload
 
                 vectorise_request_id = uuid4().hex
@@ -75,9 +79,12 @@ class IngestFlow(BaseIngestFlow):
                     vectorise_request_id, chunk
                 )
                 if not vector_response.is_success:
+                    print(vector_response.message)
                     return Response.fail(vector_response.message, vector_response.code)
                 elif vector_response.payload is None:
                     return Response.fail("Vector is inexplicably empty", 500)
+
+                print(f"Chunk {chunk_num} vectorised")
                 vector = vector_response.payload
 
                 record_id = uuid4().hex
@@ -91,9 +98,11 @@ class IngestFlow(BaseIngestFlow):
 
                 crupdate_response = await self.vector_repo.crupdate(record)
                 if not crupdate_response.is_success:
+                    print(crupdate_response.message)
                     return Response.fail(
                         crupdate_response.message, crupdate_response.code
                     )
+                print(f"Chunk {chunk_num} vector stored in vector repo")
 
                 chunk_num += 1
 
