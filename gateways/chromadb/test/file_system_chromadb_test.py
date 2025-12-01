@@ -207,7 +207,7 @@ class FileSystemChromaDBTest(IsolatedAsyncioTestCase):
 
         # Fetched data won't have the vector, so remove it for comparison
         record.vector = []
-        self.assertEqual(record, read_response.payload)
+        self.assertEqual(record, read_response.payload[0])
         ...
 
     async def test_search_by_vector(self) -> None:
