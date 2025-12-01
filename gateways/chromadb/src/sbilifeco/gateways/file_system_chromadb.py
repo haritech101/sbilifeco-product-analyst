@@ -148,15 +148,26 @@ class FileSystemChromDB(BaseVectoriser, BaseVectorRepo):
             )
 
         # Triage
-        record = VectorisedRecord(
-            id=query_result["ids"][0],
-            vector=[],
-            metadata=RecordMetadata.model_validate(query_result["metadatas"][0]),
-            document=query_result["documents"][0],
-        )
+        records = [
+            VectorisedRecord(
+                id=query_result["ids"][i],
+                vector=[],
+                metadata=RecordMetadata.model_validate(
+                    query_result["metadatas"][i]
+                    if "metadatas" in query_result and query_result["metadatas"]
+                    else {}
+                ),
+                document=(
+                    query_result["documents"][i]
+                    if "documents" in query_result and query_result["documents"]
+                    else ""
+                ),
+            )
+            for i in range(len(query_result["ids"]))
+        ]
 
         # Return
-        return Response.ok(record)
+        return Response.ok(records)
 
     async def search_by_vector(
         self, vector: list[float], num_results: int = 5
