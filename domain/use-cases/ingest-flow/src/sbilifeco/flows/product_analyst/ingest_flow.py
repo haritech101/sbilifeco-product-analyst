@@ -61,6 +61,7 @@ class IngestFlow(BaseIngestFlow):
 
             are_chunks_left = True
             chunk_num = 0
+            source_id = uuid4().hex
             while are_chunks_left:
                 chunk_response = await self.material_reader.read_next_chunk(material_id)
                 if not chunk_response.is_success:
@@ -93,7 +94,9 @@ class IngestFlow(BaseIngestFlow):
                     id=record_id,
                     vector=vector,
                     document=chunk,
-                    metadata=RecordMetadata(chunk_num=chunk_num, source=title),
+                    metadata=RecordMetadata(
+                        source_id=source_id, chunk_num=chunk_num, source=title
+                    ),
                 )
 
                 crupdate_response = await self.vector_repo.crupdate(record)
