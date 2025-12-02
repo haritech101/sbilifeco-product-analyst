@@ -80,7 +80,9 @@ class Test(IsolatedAsyncioTestCase):
         # Arrange
         document = self.faker.sentence()
         vector = [randint(0, 255) for _ in range(32)]
-        metadata = RecordMetadata(source=self.faker.name(), chunk_num=1)
+        metadata = RecordMetadata(
+            source_id=uuid4().hex, source=self.faker.name(), chunk_num=1
+        )
         record = VectorisedRecord(
             id=uuid4().hex, document=document, vector=vector, metadata=metadata
         )

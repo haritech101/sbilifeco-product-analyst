@@ -6,11 +6,11 @@ WORKDIR /usr/local/ingest-flow
 RUN pip install \
     --extra-index-url https://api.repoforge.io/yWf4uV/ \
     python-dotenv==1.1.1 \
-    sbilifeco-productanalyst-flow-ingest==0.1.0 \
+    sbilifeco-productanalyst-flow-ingest==0.1.1 \
     sbilifeco-productanalyst-http-server-ingest-flow==0.1.0 \
     sbilifeco-http-client-material-reader==0.1.0 \
     sbilifeco-http-client-vectoriser==0.1.0 \
-    sbilifeco-http-client-vector-repo==0.1.0
+    sbilifeco-http-client-vector-repo==0.1.1
 
 EXPOSE 80
 

@@ -7,7 +7,7 @@ where = ["src"]
 
 [project]
 name = "sbilifeco-models-vectorisation"
-version = "0.1.0"
+version = "0.1.1"
 description = "Model classes for product analyst application"
 dependencies = [
     "pydantic>=2.11.9"

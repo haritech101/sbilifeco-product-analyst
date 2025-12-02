@@ -51,7 +51,9 @@ class Test(IsolatedAsyncioTestCase):
             id=uuid4().hex,
             document=self.faker.paragraph(),
             vector=[randint(0, 100) for _ in range(256)],
-            metadata=RecordMetadata(source=" ".join(self.faker.words(4))),
+            metadata=RecordMetadata(
+                source_id=uuid4().hex, source=" ".join(self.faker.words(4))
+            ),
         )
         crupdate = patch.object(
             self.vector_repo, "crupdate", return_value=Response.ok(None)
