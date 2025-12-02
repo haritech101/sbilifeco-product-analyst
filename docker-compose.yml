@@ -52,3 +52,9 @@ services:
             - VECTOR_REPO_PORT=81
         labels:
             - traefik.http.routers.ingest-flow.rule=PathPrefix(`/api/v1/ingest-requests`)
+    query-flow:
+        image: sbilife/productanalyst-query-flow:latest
+        restart: always
+        env_file: .local/query-flow.env
+        labels:
+            - traefik.http.routers.productanalyst-query-flow.rule=PathPrefix(`/api/v1/material-queries`)
