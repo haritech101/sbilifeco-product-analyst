@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 where = ["src"]
 
 [project]
-name = "sbilifeco-entity-repo-sqlite"
+name = "sbilifeco-gateway-entity-repo-sqlite"
 version = "0.1.0"
 description = "Implementation of ID-name entity repo in SQLite"
 dependencies = [
