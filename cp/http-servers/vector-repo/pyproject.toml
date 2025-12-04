@@ -7,13 +7,13 @@ where = ["src"]
 
 [project]
 name = "sbilifeco-http-server-vector-repo"
-version = "0.1.0"
+version = "0.1.1"
 description = "HTTP server to serve requests from vector database"
 dependencies = [
     "fastapi>=0.116.1",
     "sbilifeco-cp-http-server>=0.1.1",
-    "sbilifeco-boundary-vector-repo>=0.1.0",
+    "sbilifeco-boundary-vector-repo>=0.1.1",
     "sbilifeco-models-base>=0.1.3",
-    "sbilifeco-models-vectorisation>=0.1.0",
+    "sbilifeco-models-vectorisation>=0.1.1",
     "sbilifeco-paths-vector-repo>=0.1.0"
 ]
