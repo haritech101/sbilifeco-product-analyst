@@ -7,7 +7,7 @@ where = ["src"]
 
 [project]
 name = "sbilifeco-productanalyst-flow-ingest"
-version = "0.1.1"
+version = "0.1.2"
 description = "description"
 dependencies = [
     "uuid>=1.30",
@@ -16,5 +16,6 @@ dependencies = [
     "sbilifeco-boundary-vectoriser>=0.1.0",
     "sbilifeco-boundary-vector-repo>=0.1.1",
     "sbilifeco-boundary-material-reader>=0.1.0",
+    "sbilifeco-boundary-id-name-repo>=0.1.0",
     "sbilifeco-productanalyst-boundary-ingest-flow>=0.1.0",
 ]

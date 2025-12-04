@@ -3,11 +3,13 @@ from __future__ import annotations
 from io import BufferedIOBase, RawIOBase, TextIOBase
 from uuid import uuid4
 from typing import Any
+from datetime import datetime
 
 from sbilifeco.boundaries.material_reader import BaseMaterialReader
 from sbilifeco.boundaries.product_analyst.ingest_flow import BaseIngestFlow
 from sbilifeco.boundaries.vector_repo import BaseVectorRepo
 from sbilifeco.boundaries.vectoriser import BaseVectoriser
+from sbilifeco.boundaries.id_name_repo import BaseIDNameRepo, IDNameEntity
 from sbilifeco.models.base import Response
 from sbilifeco.models.vectorisation import VectorisedRecord, RecordMetadata
 
@@ -19,6 +21,7 @@ class IngestFlow(BaseIngestFlow):
         self.material_reader: BaseMaterialReader
         self.vectoriser: BaseVectoriser
         self.vector_repo: BaseVectorRepo
+        self.id_name_repo: BaseIDNameRepo
 
     def set_material_reader(self, material_reader: BaseMaterialReader) -> IngestFlow:
         self.material_reader = material_reader
@@ -30,6 +33,10 @@ class IngestFlow(BaseIngestFlow):
 
     def set_vector_repo(self, vector_repo: BaseVectorRepo) -> IngestFlow:
         self.vector_repo = vector_repo
+        return self
+
+    def set_id_name_repo(self, id_name_repo: BaseIDNameRepo) -> IngestFlow:
+        self.id_name_repo = id_name_repo
         return self
 
     async def async_init(self) -> None: ...
@@ -59,9 +66,19 @@ class IngestFlow(BaseIngestFlow):
                 return Response.fail("Material ID is inexplicably empty", 500)
             material_id = read_response.payload
 
+            source_id = uuid4().hex
+
+            entity_request_id = uuid4().hex
+            entity = IDNameEntity(id=source_id, name=title, created_at=datetime.now())
+            entity_response = await self.id_name_repo.crupdate(
+                entity_request_id, entity
+            )
+            if not entity_response.is_success:
+                return Response.fail(entity_response.message, entity_response.code)
+
             are_chunks_left = True
             chunk_num = 0
-            source_id = uuid4().hex
+
             while are_chunks_left:
                 chunk_response = await self.material_reader.read_next_chunk(material_id)
                 if not chunk_response.is_success:

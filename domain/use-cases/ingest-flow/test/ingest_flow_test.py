@@ -12,6 +12,7 @@ from faker import Faker
 from sbilifeco.boundaries.material_reader import BaseMaterialReader
 from sbilifeco.boundaries.vector_repo import BaseVectorRepo
 from sbilifeco.boundaries.vectoriser import BaseVectoriser
+from sbilifeco.boundaries.id_name_repo import BaseIDNameRepo, IDNameEntity
 from sbilifeco.models.base import Response
 
 # Import the necessary service(s) here
@@ -28,6 +29,7 @@ class IngestFlowTest(IsolatedAsyncioTestCase):
         self.material_reader: BaseMaterialReader = AsyncMock(spec=BaseMaterialReader)
         self.vectoriser: BaseVectoriser = AsyncMock(spec=BaseVectoriser)
         self.vector_repo: BaseVectorRepo = AsyncMock(spec=BaseVectorRepo)
+        self.id_name_repo: BaseIDNameRepo = AsyncMock(spec=BaseIDNameRepo)
 
         # Initialise the service(s) here
         self.service = (
@@ -35,6 +37,7 @@ class IngestFlowTest(IsolatedAsyncioTestCase):
             .set_material_reader(self.material_reader)
             .set_vectoriser(self.vectoriser)
             .set_vector_repo(self.vector_repo)
+            .set_id_name_repo(self.id_name_repo)
         )
         await self.service.async_init()
 
@@ -79,10 +82,13 @@ class IngestFlowTest(IsolatedAsyncioTestCase):
             "vectorise",
             return_value=Response.ok([randint(0, 100) for _ in range(256)]),
         ).start()
-        crupdate = patch.object(
+        crupdate_material = patch.object(
             self.vector_repo,
             "crupdate",
             return_value=Response.ok(None),
+        ).start()
+        crupdate_entity = patch.object(
+            self.id_name_repo, "crupdate", return_value=Response.ok(None)
         ).start()
 
         request_ingestion_response = await self.service.request_ingestion()
@@ -104,6 +110,13 @@ class IngestFlowTest(IsolatedAsyncioTestCase):
         # Reading of material should be requested
         read_material.assert_called_once_with(sample_data)
 
+        # Material ID and title should be stored as an entity
+        crupdate_entity.assert_called_once()
+        entity = crupdate_entity.call_args_list[0][0][1]
+        assert isinstance(entity, IDNameEntity)
+
+        self.assertEqual(entity.name, title)
+
         # Chunks should be read until none are left
         get_next_chunk.assert_called()
         self.assertEqual(get_next_chunk.call_count, num_chunks + 1)
@@ -113,11 +126,15 @@ class IngestFlowTest(IsolatedAsyncioTestCase):
         vectorise.assert_called()
         self.assertEqual(vectorise.call_count, num_chunks)
 
-        crupdate.assert_called()
-        self.assertEqual(crupdate.call_count, num_chunks)
+        crupdate_material.assert_called()
+        self.assertEqual(crupdate_material.call_count, num_chunks)
 
         for i in range(num_chunks):
             self.assertEqual(vectorise.call_args_list[i][0][1], chunks[i])
-            self.assertEqual(crupdate.call_args_list[i][0][0].document, chunks[i])
-            self.assertEqual(crupdate.call_args_list[i][0][0].metadata.source, title)
+            self.assertEqual(
+                crupdate_material.call_args_list[i][0][0].document, chunks[i]
+            )
+            self.assertEqual(
+                crupdate_material.call_args_list[i][0][0].metadata.source, title
+            )
         ...
