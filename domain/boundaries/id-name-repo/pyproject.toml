@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project]
+name = "sbilifeco-boundary-id-name-repo"
+version = "0.1.0"
+description = "A repository that stores names mapped to IDs, with other optional fields"
+dependencies = [
+    "sbilifeco-models-base>=0.1.3"
+]
