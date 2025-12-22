@@ -58,9 +58,9 @@ class Test(IsolatedAsyncioTestCase):
         #     await self.service.async_shutdown()
         patch.stopall()
         try:
-            ...
-        except Exception:
             await self.vector_repo_client.delete_by_criteria({"source": self.title})
+        except Exception:
+            ...
 
     async def test_ingest(self) -> None:
         # Arrange
