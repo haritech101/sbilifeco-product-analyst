@@ -69,4 +69,4 @@ services:
             - .local/.sqlite:/var/lib/repo
         restart: always
         labels:
-            - traefik.http.routers.<router name>.rule=PathPrefix(`/api/v1/id-name-entities`)
+            - traefik.http.routers.id-name-entities.rule=PathPrefix(`/api/v1/id-name-entities`)
