@@ -21,8 +21,6 @@ services:
             - DOCLINGSERVE_HOST=docling-serve
             - DOCLINGSERVE_PORT=5001
         restart: always
-        labels:
-            - traefik.http.routers.material-reader.rule=PathPrefix(`/api/v1/materials`)
     chromadb-gateway:
         image: sbilife/chromadb-gateway
         environment:
