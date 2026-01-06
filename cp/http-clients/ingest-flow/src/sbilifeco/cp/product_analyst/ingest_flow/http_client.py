@@ -55,8 +55,8 @@ class IngestFlowHttpClient(HttpClient, BaseIngestFlow):
             req = Request(
                 url=url,
                 method="POST",
+                data={"title": title},
                 files={
-                    "title": ("title", title, "text/plain"),
                     "material": ("material", triaged_source, content_type),
                 },
             )
