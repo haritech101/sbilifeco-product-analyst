@@ -1,11 +1,12 @@
 from typing import Any, Callable, Literal, Optional
 from pydantic import BaseModel
-from sbilifeco.boundaries.id_name_repo import IDNameEntity
+from sbilifeco.boundaries.id_name_repo import IDNameEntity, SortField, SortDirection
 
 
 class Pagination(BaseModel):
     page_size: int = -1
     page_num: int = -1
+    sorts: dict[SortField, SortDirection] = {}
 
 
 class IDNameOp(BaseModel):
@@ -25,4 +26,4 @@ class Paths:
     UPSERT_REQUESTS = BASE + "/upsert-requests"
     DELETE_REQUESTS = BASE + "/delete-requests"
     READ_BY_ID_REQUESTS = BASE + "/read-by-id-requests"
-    READ_MANY_REQUESTS = BASE + "/read-may-requests"
+    READ_MANY_REQUESTS = BASE + "/read-many-requests"

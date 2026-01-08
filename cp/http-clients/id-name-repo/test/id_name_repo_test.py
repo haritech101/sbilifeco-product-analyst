@@ -15,7 +15,12 @@ from datetime import datetime
 from sbilifeco.models.base import Response
 
 # Import the necessary service(s) here
-from sbilifeco.boundaries.id_name_repo import IDNameEntity, BaseIDNameRepo
+from sbilifeco.boundaries.id_name_repo import (
+    IDNameEntity,
+    BaseIDNameRepo,
+    SortField,
+    SortDirection,
+)
 from sbilifeco.cp.id_name_repo.http_server import IDNameRepoHttpServer
 from sbilifeco.cp.id_name_repo.http_client import IDNameRepoHttpClient
 
@@ -100,10 +105,13 @@ class Test(IsolatedAsyncioTestCase):
         request_id = uuid4().hex
         page_size = 50
         page_num = 3
+        sorts = {SortField.NAME: SortDirection.ASCENDING}
 
         # Act
-        response = await self.http_client.read_many(request_id, page_size, page_num)
+        response = await self.http_client.read_many(
+            request_id, page_size, page_num, sorts
+        )
 
         # Assert
         self.assertTrue(response.is_success, response.message)
-        fn_read_many.assert_called_once_with(request_id, page_size, page_num)
+        fn_read_many.assert_called_once_with(request_id, page_size, page_num, sorts)
