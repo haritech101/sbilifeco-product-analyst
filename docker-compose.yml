@@ -68,3 +68,9 @@ services:
         restart: always
         labels:
             - traefik.http.routers.id-name-entities.rule=PathPrefix(`/api/v1/id-name-entities`)
+    ingest-flow-ui:
+        image: sbilife/productanalyst-ingest-flow-ui:latest
+        env_file: .local/ingest-flow-ui.env
+        restart: always
+        labels:
+            - traefik.http.routers.<router name>.rule=PathPrefix(`/ingest-ui`)
