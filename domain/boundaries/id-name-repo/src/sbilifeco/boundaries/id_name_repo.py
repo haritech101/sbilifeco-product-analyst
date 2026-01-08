@@ -1,5 +1,6 @@
 from __future__ import annotations
 from typing import Protocol, Any, Sequence, Optional
+from enum import IntEnum
 from sbilifeco.models.base import Response
 from pydantic import BaseModel
 from datetime import datetime
@@ -18,6 +19,18 @@ class IDNameEntity(BaseModel):
         map["created_at"] = self.created_at.isoformat()
         map["updated_at"] = self.updated_at.isoformat()
         return map
+
+
+class SortField(IntEnum):
+    NAME = 1
+    CREATED_AT = 2
+    UPDATED_AT = 3
+    IS_ENABLED = 4
+
+
+class SortDirection(IntEnum):
+    ASCENDING = 1
+    DESCENDING = 2
 
 
 class IDNameRepoListener(Protocol):
@@ -47,5 +60,9 @@ class BaseIDNameRepo:
         self, request_id: str, entity_id: str
     ) -> Response[IDNameEntity]: ...
     async def read_many(
-        self, request_id: str, page_size: int = -1, page_num: int = -1
+        self,
+        request_id: str,
+        page_size: int = -1,
+        page_num: int = -1,
+        sorts: dict[SortField, SortDirection] = {},
     ) -> Response[Sequence[IDNameEntity]]: ...

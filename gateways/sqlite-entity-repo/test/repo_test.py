@@ -15,7 +15,12 @@ from sbilifeco.models.base import Response
 
 # Import the necessary service(s) here
 from datetime import datetime
-from sbilifeco.gateways.sqlite_entity_repo import SQLiteEntityRepo, IDNameEntity
+from sbilifeco.gateways.sqlite_entity_repo import (
+    SQLiteEntityRepo,
+    IDNameEntity,
+    SortDirection,
+    SortField,
+)
 
 
 class Test(IsolatedAsyncioTestCase):
@@ -137,17 +142,15 @@ class Test(IsolatedAsyncioTestCase):
 
     async def test_read_many(self) -> None:
         # Arrange
-        entities = sorted(
-            [
-                IDNameEntity(
-                    id=uuid4().hex,
-                    name=self.faker.name(),
-                    created_at=datetime.now(),
-                )
-                for _ in range(17)
-            ],
-            key=lambda entity: entity.name,
-        )
+        entities = [
+            IDNameEntity(
+                id=uuid4().hex,
+                name=self.faker.name(),
+                created_at=datetime.now(),
+            )
+            for _ in range(17)
+        ]
+
         for entity in entities:
             crupdate_response = await self.service.crupdate(uuid4().hex, entity)
             assert crupdate_response.is_success
@@ -162,4 +165,34 @@ class Test(IsolatedAsyncioTestCase):
         # Assert
         self.assertTrue(response.is_success, response.message)
         assert response.payload is not None
-        self.assertEqual(response.payload, entities[:page_size])
+        self.assertEqual(response.payload, entities[:5])
+
+        # Act
+        response = await self.service.read_many(
+            read_request_id,
+            page_size,
+            page_num,
+            {SortField.CREATED_AT: SortDirection.DESCENDING},
+        )
+
+        # Assert
+        self.assertTrue(response.is_success, response.message)
+        assert response.payload is not None
+        expected_entities = sorted(entities, key=lambda e: e.created_at, reverse=True)[
+            :5
+        ]
+        self.assertEqual(response.payload, expected_entities)
+
+        # Act
+        response = await self.service.read_many(
+            read_request_id,
+            page_size,
+            page_num,
+            {SortField.NAME: SortDirection.ASCENDING},
+        )
+
+        # Assert
+        self.assertTrue(response.is_success, response.message)
+        assert response.payload is not None
+        expected_entities = sorted(entities, key=lambda e: e.name)[:5]
+        self.assertEqual(response.payload, expected_entities)

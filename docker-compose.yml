@@ -58,8 +58,8 @@ services:
         env_file: .local/query-flow.env
         labels:
             - traefik.http.routers.productanalyst-query-flow.rule=PathPrefix(`/api/v1/material-queries`)
-    sqlite-id-name-repo:
-        image: sbilife/sqlite-id-name-repo:latest
+    sqlite-gateway:
+        image: sbilife/sqlite-gateway:latest
         environment:
             - HTTP_PORT=80
             - DB_PATH=/var/lib/repo/entities.sqlite
@@ -68,3 +68,9 @@ services:
         restart: always
         labels:
             - traefik.http.routers.id-name-entities.rule=PathPrefix(`/api/v1/id-name-entities`)
+    ingest-flow-ui:
+        image: sbilife/productanalyst-ingest-flow-ui:latest
+        env_file: .local/ingest-flow-ui.env
+        restart: always
+        labels:
+            - traefik.http.routers.<router name>.rule=PathPrefix(`/ingest-ui`)
