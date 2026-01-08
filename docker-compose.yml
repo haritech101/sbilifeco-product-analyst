@@ -21,8 +21,6 @@ services:
             - DOCLINGSERVE_HOST=docling-serve
             - DOCLINGSERVE_PORT=5001
         restart: always
-        labels:
-            - traefik.http.routers.material-reader.rule=PathPrefix(`/api/v1/materials`)
     chromadb-gateway:
         image: sbilife/chromadb-gateway
         environment:
@@ -45,11 +43,13 @@ services:
         restart: always
         environment:
             - HTTP_PORT=80
-            - MATERIAL_READER_HOST=docling-reader
+            - MATERIAL_READER_HOST=172.26.0.1
+            - MATERIAL_READER_PORT=11300
             - VECTORISER_HOST=chromadb-gateway
             - VECTORISER_PORT=80
             - VECTOR_REPO_HOST=chromadb-gateway
             - VECTOR_REPO_PORT=81
+            - ID_NAME_REPO_HOST=sqlite-id-name-repo
         labels:
             - traefik.http.routers.ingest-flow.rule=PathPrefix(`/api/v1/ingest-requests`)
     query-flow:
@@ -67,4 +67,10 @@ services:
             - .local/.sqlite:/var/lib/repo
         restart: always
         labels:
-            - traefik.http.routers.<router name>.rule=PathPrefix(`/api/v1/id-name-entities`)
+            - traefik.http.routers.id-name-entities.rule=PathPrefix(`/api/v1/id-name-entities`)
+    ingest-flow-ui:
+        image: sbilife/productanalyst-ingest-flow-ui:latest
+        env_file: .local/ingest-flow-ui.env
+        restart: always
+        labels:
+            - traefik.http.routers.<router name>.rule=PathPrefix(`/ingest-ui`)
