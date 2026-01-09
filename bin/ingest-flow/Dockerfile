@@ -1,5 +1,5 @@
-# sbilife/ingest-flow 
-FROM python:3.12
+# sbilife/ingest-flow
+FROM python:3.14-alpine
 
 WORKDIR /usr/local/ingest-flow
 
