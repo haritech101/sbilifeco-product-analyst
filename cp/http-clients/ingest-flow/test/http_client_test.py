@@ -13,7 +13,12 @@ from faker import Faker
 from sbilifeco.models.base import Response
 
 # Import the necessary service(s) here
-from sbilifeco.boundaries.product_analyst.ingest_flow import BaseIngestFlow
+from sbilifeco.boundaries.product_analyst.ingest_flow import (
+    BaseIngestFlow,
+    IDNameEntity,
+    SortField,
+    SortDirection,
+)
 from sbilifeco.cp.product_analyst.ingest_flow.http_server import IngestFlowHttpServer
 from sbilifeco.cp.product_analyst.ingest_flow.http_client import IngestFlowHttpClient
 
@@ -70,3 +75,37 @@ class Test(IsolatedAsyncioTestCase):
         self.assertTrue(response.is_success, response.message)
 
         ingest.assert_called_once_with(request_id, title, material)
+
+    async def test_get_materials(self) -> None:
+        # Arrange
+        request_id = uuid4().hex
+        page = 1
+        page_size = 5
+        sorts = {SortField.CREATED_AT: SortDirection.DESCENDING}
+        materials = [
+            IDNameEntity(
+                id=uuid4().hex, name=name, created_at=self.faker.date_time_this_year()
+            )
+            for name in self.faker.words(page_size)
+        ]
+
+        fn_get_materials = patch.object(
+            self.ingest_flow,
+            "get_materials",
+            return_value=Response.ok(materials),
+        ).start()
+
+        # Act
+        response = await self.client.get_materials(page_size, page, sorts)
+
+        # Assert
+        self.assertTrue(response.is_success, response.message)
+
+        fn_get_materials.assert_called_once()
+        fn_args = fn_get_materials.call_args[0]
+        self.assertEqual(fn_args[0], page_size)
+        self.assertEqual(fn_args[1], page)
+        self.assertEqual(fn_args[2], sorts)
+
+        assert response.payload is not None
+        self.assertEqual(response.payload, materials)

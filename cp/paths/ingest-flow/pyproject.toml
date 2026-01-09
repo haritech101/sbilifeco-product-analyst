@@ -9,4 +9,6 @@ where = ["src"]
 name = "sbilifeco-productanalyst-paths-ingest-flow"
 version = "0.1.0"
 description = "Paths for ingest flow microservice in product analyst application"
-dependencies = []
+dependencies = [
+    "sbilifeco-boundary-id-name-repo>=0.1.0",
+]
