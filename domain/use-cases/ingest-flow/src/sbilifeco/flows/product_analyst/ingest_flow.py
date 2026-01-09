@@ -9,7 +9,12 @@ from sbilifeco.boundaries.material_reader import BaseMaterialReader
 from sbilifeco.boundaries.product_analyst.ingest_flow import BaseIngestFlow
 from sbilifeco.boundaries.vector_repo import BaseVectorRepo
 from sbilifeco.boundaries.vectoriser import BaseVectoriser
-from sbilifeco.boundaries.id_name_repo import BaseIDNameRepo, IDNameEntity
+from sbilifeco.boundaries.id_name_repo import (
+    BaseIDNameRepo,
+    IDNameEntity,
+    SortField,
+    SortDirection,
+)
 from sbilifeco.models.base import Response
 from sbilifeco.models.vectorisation import VectorisedRecord, RecordMetadata
 
@@ -146,5 +151,32 @@ class IngestFlow(BaseIngestFlow):
 
             print("Ingestion completed successfully")
             return Response.ok(None)
+        except Exception as e:
+            return Response.error(e)
+
+    async def get_materials(
+        self,
+        page_size: int = -1,
+        page: int = -1,
+        sorts: dict[SortField, SortDirection] = {},
+    ) -> Response[list[IDNameEntity]]:
+        try:
+            print("Using repo to fetch list of materials", flush=True)
+            request_id = uuid4().hex
+
+            response = await self.id_name_repo.read_many(
+                request_id, page_size, page, sorts
+            )
+            if not response.is_success:
+                print(
+                    f"Error while getting list of materials: {response.message}",
+                    flush=True,
+                )
+                return Response.fail(response.message, response.code)
+            elif response.payload is None:
+                return Response.fail("Payload is inexplicably empty", 500)
+            materials = response.payload
+
+            return Response.ok(materials)
         except Exception as e:
             return Response.error(e)

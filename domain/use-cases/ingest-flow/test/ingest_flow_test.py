@@ -1,3 +1,4 @@
+from re import S
 import sys
 
 sys.path.append("./src")
@@ -12,7 +13,12 @@ from faker import Faker
 from sbilifeco.boundaries.material_reader import BaseMaterialReader
 from sbilifeco.boundaries.vector_repo import BaseVectorRepo
 from sbilifeco.boundaries.vectoriser import BaseVectoriser
-from sbilifeco.boundaries.id_name_repo import BaseIDNameRepo, IDNameEntity
+from sbilifeco.boundaries.id_name_repo import (
+    BaseIDNameRepo,
+    IDNameEntity,
+    SortField,
+    SortDirection,
+)
 from sbilifeco.models.base import Response
 
 # Import the necessary service(s) here
@@ -137,4 +143,49 @@ class IngestFlowTest(IsolatedAsyncioTestCase):
             self.assertEqual(
                 crupdate_material.call_args_list[i][0][0].metadata.source, title
             )
+        ...
+
+    async def test_get_materials(self) -> None:
+        # Arrange
+        num_materials = 5
+        materials = [
+            IDNameEntity(
+                id=uuid4().hex,
+                name=self.faker.sentence(),
+                created_at=self.faker.date_time_this_year(),
+            )
+            for _ in range(num_materials)
+        ]
+        page_size = 5
+        page = 1
+        sorts = {SortField.NAME: SortDirection.ASCENDING}
+
+        fn_read_many = patch.object(
+            self.id_name_repo,
+            "read_many",
+            return_value=Response.ok(materials),
+        ).start()
+
+        # Act
+        get_materials_response = await self.service.get_materials(
+            page_size, page, sorts
+        )
+
+        # Assert
+        fn_read_many.assert_called_once()
+        fn_args = fn_read_many.call_args_list[0][0]
+        self.assertEqual(fn_args[1], page_size)
+        self.assertEqual(fn_args[2], page)
+        self.assertEqual(fn_args[3], sorts)
+
+        self.assertTrue(
+            get_materials_response.is_success, get_materials_response.message
+        )
+        assert get_materials_response.payload is not None
+        self.assertEqual(len(get_materials_response.payload), num_materials)
+        self.assertEqual(
+            get_materials_response.payload,
+            materials,
+        )
+
         ...

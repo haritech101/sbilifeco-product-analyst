@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import Protocol
 from sbilifeco.models.base import Response
 from io import BufferedIOBase, RawIOBase, TextIOBase
+from sbilifeco.boundaries.id_name_repo import IDNameEntity, SortField, SortDirection
 
 
 class BaseIngestFlow:
@@ -30,6 +31,19 @@ class BaseIngestFlow:
             ingestion_request: the request ID obtained from `request_ingestion`
             source: the data source to be ingested
         Returns: a response indicating success or failure of the ingestion"""
+        ...
+
+    async def get_materials(
+        self,
+        page_size: int = -1,
+        page: int = -1,
+        sorts: dict[SortField, SortDirection] = {},
+    ) -> Response[list[IDNameEntity]]:
+        """Retrieve a list of ingested materials."""
+        """Args:
+            page_size: number of items per page
+            page: page number to retrieve. Start from 1 and not 0
+        Returns: a response containing a list of material identifiers and names"""
         ...
 
 

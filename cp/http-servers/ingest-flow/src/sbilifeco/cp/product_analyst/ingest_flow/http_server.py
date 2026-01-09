@@ -2,8 +2,13 @@ from __future__ import annotations
 from typing import Annotated
 from fastapi import Path, UploadFile, Form
 from sbilifeco.cp.common.http.server import HttpServer
-from sbilifeco.boundaries.product_analyst.ingest_flow import BaseIngestFlow
-from sbilifeco.cp.product_analyst.ingest_flow.paths import IngestFlowPaths
+from sbilifeco.boundaries.product_analyst.ingest_flow import (
+    BaseIngestFlow,
+    SortDirection,
+    SortField,
+    IDNameEntity,
+)
+from sbilifeco.cp.product_analyst.ingest_flow.paths import IngestFlowPaths, Pagination
 from sbilifeco.models.base import Response
 
 
@@ -64,6 +69,27 @@ class IngestFlowHttpServer(HttpServer):
                 # Gateway call
                 response = await self.flow.ingest(
                     ingest_request_id, title, material_untyped
+                )
+
+                # Return response
+                return response
+            except Exception as e:
+                return Response.error(e)
+
+        @self.post(IngestFlowPaths.MATERIALS)
+        async def get_materials(
+            pagination: Pagination,
+        ) -> Response[list[IDNameEntity]]:
+            try:
+                # Validate request
+                ...
+
+                # Triage request
+                ...
+
+                # Gateway call
+                response = await self.flow.get_materials(
+                    pagination.page_size, pagination.page_num, pagination.sorts
                 )
 
                 # Return response
