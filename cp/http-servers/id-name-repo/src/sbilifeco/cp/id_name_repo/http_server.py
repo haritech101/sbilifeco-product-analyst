@@ -102,7 +102,10 @@ class IDNameRepoHttpServer(HttpServer):
 
                 # Gateway call
                 res = await self.repo.read_many(
-                    request_id, pagination.page_size, pagination.page_num
+                    request_id,
+                    pagination.page_size,
+                    pagination.page_num,
+                    pagination.sorts,
                 )
 
                 # Triage response

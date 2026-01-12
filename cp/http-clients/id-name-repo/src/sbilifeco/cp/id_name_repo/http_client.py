@@ -1,7 +1,12 @@
 from __future__ import annotations
 from typing import Sequence
 from sbilifeco.models.base import Response
-from sbilifeco.boundaries.id_name_repo import BaseIDNameRepo, IDNameEntity
+from sbilifeco.boundaries.id_name_repo import (
+    BaseIDNameRepo,
+    IDNameEntity,
+    SortDirection,
+    SortField,
+)
 from sbilifeco.cp.common.http.client import HttpClient, Request
 from sbilifeco.cp.id_name_repo.paths import Paths, IDNameOp, Pagination
 
@@ -76,14 +81,18 @@ class IDNameRepoHttpClient(BaseIDNameRepo, HttpClient):
             return Response.error(e)
 
     async def read_many(
-        self, request_id: str, page_size: int = -1, page_num: int = -1
+        self,
+        request_id: str,
+        page_size: int = -1,
+        page_num: int = -1,
+        sorts: dict[SortField, SortDirection] = {},
     ) -> Response[Sequence[IDNameEntity]]:
         try:
             # Form request
             url = f"{self.url_base}{Paths.READ_MANY_REQUESTS}"
             payload = IDNameOp(
                 request_id=request_id,
-                params=Pagination(page_size=page_size, page_num=page_num),
+                params=Pagination(page_size=page_size, page_num=page_num, sorts=sorts),
             ).model_dump()
             req = Request(url=url, method="POST", json=payload)
 

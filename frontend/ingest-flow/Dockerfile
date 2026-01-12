@@ -7,6 +7,7 @@ RUN apk add gettext
 ENV HTTP_PORT=80
 ENV API_BASE_URL=
 ENV API_INGEST_PATH=/api/v1/ingest-requests
+ENV API_MATERIALS_PATH=/api/v1/material-list-requests
 
 COPY package.json package-lock.json ./
 RUN npm install --omit=dev
