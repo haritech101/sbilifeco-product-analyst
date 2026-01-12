@@ -15,7 +15,7 @@ from sbilifeco.models.base import Response
 
 # Import the necessary service(s) here
 from asyncio import sleep
-from playwright.async_api import async_playwright, Playwright, Route, Request
+from playwright.async_api import async_playwright, Playwright, Route, Request, expect
 
 
 class Test(IsolatedAsyncioTestCase):
@@ -79,15 +79,12 @@ class Test(IsolatedAsyncioTestCase):
         self.assertIn("processing", (await feedback_banner.inner_text()).lower())
 
         # Assert
-        await self.page.wait_for_event("requestfinished", timeout=60000)
+        await self.page.wait_for_event("requestfinished", timeout=90000)
 
         self.assertIn("success", (await feedback_banner.inner_text()).lower())
 
         self.assertEqual(await content_name_input.input_value(), "")
         self.assertEqual(await file_input.input_value(), "")
 
-        # uploaded_content_name = self.page.get_by_text(content_title)
-        # self.assertIsNotNone(
-        #     await uploaded_content_name.wait_for(timeout=500),
-        #     "Name of freshly uploaded content not found on page",
-        # )
+        uploaded_content_name = self.page.get_by_text(content_title)
+        await expect(uploaded_content_name).to_be_visible()

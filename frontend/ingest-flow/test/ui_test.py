@@ -15,7 +15,8 @@ from sbilifeco.models.base import Response
 
 # Import the necessary service(s) here
 from asyncio import sleep
-from playwright.async_api import async_playwright, Playwright, Route, Request
+from playwright.async_api import async_playwright, Playwright, Route, Request, expect
+from sbilifeco.boundaries.id_name_repo import IDNameEntity
 
 
 class Test(IsolatedAsyncioTestCase):
@@ -36,6 +37,15 @@ class Test(IsolatedAsyncioTestCase):
 
         self.page.on("console", lambda msg: print(f"PAGE LOG: {msg}"))
 
+        self.materials = [
+            IDNameEntity(
+                id=uuid4().hex,
+                name=",".join(self.faker.words(3)),
+                created_at=self.faker.date_time_this_year(),
+            )
+            for i in range(1, 6)
+        ]
+
     async def asyncTearDown(self) -> None:
         # Shutdown the service(s) here
         self.ingest_url_requests.clear()
@@ -45,7 +55,10 @@ class Test(IsolatedAsyncioTestCase):
         patch.stopall()
 
     async def gather_request(self, req: Request):
-        if "/api/v1/ingest-requests" in req.url:
+        if (
+            "/api/v1/ingest-requests" in req.url
+            or "/api/v1/material-list-requests" in req.url
+        ):
             self.ingest_url_requests.append(req)
 
     async def route_request_ingestion(self, route: Route) -> None:
@@ -64,9 +77,18 @@ class Test(IsolatedAsyncioTestCase):
         else:
             await route.continue_()
 
+    async def route_request_materials(self, route: Route) -> None:
+        await route.fulfill(
+            status=200,
+            content_type="application/json",
+            body=Response.ok(self.materials).model_dump_json(),
+        )
+
     async def test_page_loads(self) -> None:
         # Arrange
-        ...
+        await self.page.route(
+            "**/api/v1/material-list-requests", self.route_request_materials
+        )
 
         # Act
         await self.page.goto(self.base_url)
@@ -74,8 +96,15 @@ class Test(IsolatedAsyncioTestCase):
         # Assert
         await self.page.wait_for_url(self.base_url)
 
+        await expect(self.page.locator("#panel-materials div.row")).to_have_count(
+            len(self.materials)
+        )
+
     async def test_error_when_blank_content_name(self) -> None:
         # Arrange
+        await self.page.route(
+            "**/api/v1/material-list-requests", self.route_request_materials
+        )
         await self.page.goto(self.base_url)
         upload_button = await self.page.wait_for_selector(
             "#action-upload", timeout=5000
@@ -94,6 +123,9 @@ class Test(IsolatedAsyncioTestCase):
 
     async def test_error_when_no_file_selected(self) -> None:
         # Arrange
+        await self.page.route(
+            "**/api/v1/material-list-requests", self.route_request_materials
+        )
         await self.page.goto(self.base_url)
         content_name_input = await self.page.wait_for_selector(
             "#input-content-name", timeout=5000
@@ -118,6 +150,9 @@ class Test(IsolatedAsyncioTestCase):
         await self.page.route(
             "**/api/v1/ingest-requests**", self.route_request_ingestion
         )
+        await self.page.route(
+            "**/api/v1/material-list-requests", self.route_request_materials
+        )
         self.page.on("request", self.gather_request)
 
         await self.page.goto(self.base_url)
@@ -133,6 +168,13 @@ class Test(IsolatedAsyncioTestCase):
         assert feedback_banner is not None
 
         content_title = " ".join(self.faker.words(3))
+        self.materials.append(
+            IDNameEntity(
+                id=uuid4().hex,
+                name=content_title,
+                created_at=datetime.now(),
+            )
+        )
 
         # Act
         await content_name_input.fill(content_title)
@@ -142,14 +184,22 @@ class Test(IsolatedAsyncioTestCase):
         # Assert
         await sleep(1)
 
-        self.assertEqual(len(self.ingest_url_requests), 2)
+        self.assertEqual(len(self.ingest_url_requests), 4)
         self.assertTrue(
-            self.ingest_url_requests[0].url.endswith("/api/v1/ingest-requests"),
+            self.ingest_url_requests[0].url.endswith("/api/v1/material-list-requests"),
+            "Third request should fetch updated material list",
+        )
+        self.assertTrue(
+            self.ingest_url_requests[1].url.endswith("/api/v1/ingest-requests"),
             "First request should request ingestion",
         )
         self.assertTrue(
-            "/api/v1/ingest-requests" in self.ingest_url_requests[1].url,
+            "/api/v1/ingest-requests" in self.ingest_url_requests[2].url,
             "Second request should inject data into current ingestion request",
+        )
+        self.assertTrue(
+            self.ingest_url_requests[3].url.endswith("/api/v1/material-list-requests"),
+            "Third request should fetch updated material list",
         )
 
         self.assertIn("success", (await feedback_banner.inner_text()).lower())
@@ -157,8 +207,5 @@ class Test(IsolatedAsyncioTestCase):
         self.assertEqual(await content_name_input.input_value(), "")
         self.assertEqual(await file_input.input_value(), "")
 
-        # uploaded_content_name = self.page.get_by_text(content_title)
-        # self.assertIsNotNone(
-        #     await uploaded_content_name.wait_for(timeout=500),
-        #     "Name of freshly uploaded content not found on page",
-        # )
+        uploaded_content_name = self.page.get_by_text(content_title)
+        await expect(uploaded_content_name).to_be_visible()

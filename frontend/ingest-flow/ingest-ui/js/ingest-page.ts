@@ -1,4 +1,5 @@
-const apiUrl = "${API_BASE_URL}${API_INGEST_PATH}";
+const ingestUrl = "${API_BASE_URL}${API_INGEST_PATH}";
+const materialsUrl = "${API_BASE_URL}${API_MATERIALS_PATH}";
 
 const inputContentName = document.getElementById(
     "input-content-name"
@@ -11,6 +12,9 @@ const actionUpload = document.getElementById(
 ) as HTMLButtonElement;
 const bannerFeedbackUpload = document.getElementById(
     "banner-feedback-upload"
+) as HTMLDivElement;
+const panelMaterials = document.getElementById(
+    "panel-materials"
 ) as HTMLDivElement;
 
 const leaveFeedback = (
@@ -32,10 +36,54 @@ const leaveFeedback = (
     }
 };
 
+const loadAndShowMaterials = async () => {
+    console.log("Fetching latest list of materials");
+    const req = new Request(materialsUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+    });
+    const res = await fetch(req);
+    if (!res.ok) {
+        console.warn(
+            `Failed to load materials list: ${(await res.text()) || res.status}`
+        );
+        return;
+    }
+
+    const api_response = await res.json();
+    if (api_response?.is_success !== true) {
+        console.warn(
+            `Failed to load materials list: ${
+                api_response?.message || "Unknown error"
+            }`
+        );
+        return;
+    }
+
+    const materials = api_response.payload as Array<any>;
+    const renderedRows = api_response.payload
+        .map(
+            (material: any) => `
+        <div class='row'>
+            <div class='col-md-2'>ID: ${material.name}</div>
+            <div class='col-md-2'>ID: ${material.created_at}</div>
+        </div>
+        `
+        )
+        .join("\n");
+
+    panelMaterials.innerHTML = renderedRows;
+};
+
+window.addEventListener("load", async () => {
+    await loadAndShowMaterials();
+});
+
 const processUpload = async () => {
     console.log(`Requesting an ingestion session`);
 
-    let req = new Request(apiUrl, { method: "POST" });
+    let req = new Request(ingestUrl, { method: "POST" });
     let res = await fetch(req);
     if (!res.ok) {
         leaveFeedback(
@@ -66,7 +114,7 @@ const processUpload = async () => {
             new Blob([], { type: "application/octet-stream" })
     );
 
-    req = new Request(`${apiUrl}/${ingest_request_id}`, {
+    req = new Request(`${ingestUrl}/${ingest_request_id}`, {
         method: "POST",
         body: dataToPost,
     });
@@ -94,6 +142,8 @@ const processUpload = async () => {
 
     inputContentName.value = "";
     inputContentFile.value = "";
+
+    await loadAndShowMaterials();
 };
 
 const onUploadTriggered = async () => {
