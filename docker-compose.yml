@@ -7,6 +7,8 @@ services:
         command:
             - --api.insecure=true
             - --providers.docker=true
+            - --accesslog=true
+            - --log.level=DEBUG
         ports:
             - 11900:80
             - 11901:8080
