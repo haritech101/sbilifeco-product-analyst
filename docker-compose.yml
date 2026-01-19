@@ -45,16 +45,6 @@ services:
             - DOCLINGSERVE_HOST=docling-serve
             - DOCLINGSERVE_PORT=5001
         restart: always
-    chromadb-gateway:
-        image: sbilife/chromadb-gateway
-        environment:
-            - HTTP_PORT_VECTORISER=80
-            - HTTP_PORT_VECTOR_REPO=81
-            - DB_PATH=/var/lib/chromadb
-            - COLLECTION_NAME=material
-        restart: always
-        volumes:
-            - ./.local/.chromadb:/var/lib/chromadb
     ingest-flow:
         image: sbilife/ingest-flow:latest
         restart: always
