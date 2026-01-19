@@ -15,6 +15,21 @@ services:
     docling-serve:
         image: ghcr.io/docling-project/docling-serve-cpu:v1.9.0
         restart: always
+    qdrant:
+        image: qdrant/qdrant:latest
+        restart: always
+        ports:
+            - 11902:6333
+        volumes:
+            - ./.local/.qdrant:/qdrant/storage
+    qdrant-gateway:
+        image: sbilife/qdrant-gateway:latest
+        environment:
+            - VECTORISER_HTTP_PORT=80
+            - VECTOR_REPO_HTTP_PORT=81
+            - QDRANT_URL=http://qdrant:6333
+            - COLLECTION_NAME=insurance_material
+        restart: always
     docling-reader:
         image: sbilife/docling-reader:latest
         environment:
