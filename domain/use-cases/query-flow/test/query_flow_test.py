@@ -70,7 +70,9 @@ class Test(IsolatedAsyncioTestCase):
                 vector=[randint(1, 100) for _ in range(256)],
                 document=self.fake.text(),
                 metadata=RecordMetadata(
-                    source=" ".join(self.fake.words(3)), chunk_num=i
+                    source_id=uuid4().hex,
+                    source=" ".join(self.fake.words(3)),
+                    chunk_num=i,
                 ),
                 score=randint(80, 100),
             )

@@ -11,6 +11,7 @@ from uuid import uuid4
 from random import randint
 from faker import Faker
 from sbilifeco.models.base import Response
+from pprint import pprint
 
 # Import the necessary service(s) here
 from service import QueryFlowMicroservice
@@ -48,7 +49,7 @@ class Test(IsolatedAsyncioTestCase):
 
     async def test_search(self) -> None:
         # Arrange
-        query = "What is the premium for a 35-year old?"
+        query = "Give me the details of the policy in tabulated form"
 
         # Act
         response = await self.client.request_search()
@@ -63,4 +64,10 @@ class Test(IsolatedAsyncioTestCase):
 
         # Assert
         self.assertTrue(response.is_success, response.message)
-        assert response.payload is not None
+        rated_answer = response.payload
+
+        assert rated_answer is not None
+        self.assertTrue(rated_answer.answer)
+        self.assertTrue(rated_answer.sources)
+
+        pprint(rated_answer.model_dump())

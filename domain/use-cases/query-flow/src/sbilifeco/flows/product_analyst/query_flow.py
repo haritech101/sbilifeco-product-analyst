@@ -40,6 +40,9 @@ class QueryFlow(BaseQueryFlow):
         try:
             request_id = uuid4().hex
             self.search_requests[request_id] = {}
+
+            print(f"Search with ID {request_id} requested.", flush=True)
+
             return Response.ok(request_id)
         except Exception as e:
             return Response.error(e)
@@ -49,6 +52,11 @@ class QueryFlow(BaseQueryFlow):
     ) -> Response[RatedAnswer]:
         try:
             # Validate
+            print(
+                f'In search request {search_request_id}, the query "{query}" has been asked',
+                flush=True,
+            )
+
             if search_request_id not in self.search_requests:
                 return Response.fail(
                     f"Search request {search_request_id} not found", 404
@@ -57,6 +65,10 @@ class QueryFlow(BaseQueryFlow):
             # Vectorise the query
             vector_response = await self.vectoriser.vectorise(search_request_id, query)
             if not vector_response.is_success:
+                print(
+                    f"Failed to vectorise query in search request {search_request_id}: {vector_response.code}/{vector_response.message}",
+                    flush=True,
+                )
                 return Response.fail(vector_response.message, vector_response.code)
             elif vector_response.payload is None:
                 return Response.fail("Search term vector is inexplicably empty", 500)
@@ -67,6 +79,10 @@ class QueryFlow(BaseQueryFlow):
                 search_vector, num_results
             )
             if not search_response.is_success:
+                print(
+                    f"Failed to search by vector in search request {search_request_id}: {search_response.code}/{search_response.message}",
+                    flush=True,
+                )
                 return Response.fail(search_response.message, search_response.code)
             elif search_response.payload is None:
                 return Response.fail("Search results are inexplicably empty", 500)
@@ -80,8 +96,18 @@ class QueryFlow(BaseQueryFlow):
                 f"\n\nNow please answer the following question:\n\n"
                 f"{query}\n\n"
             )
+
+            print(
+                f"Invoking the LLM for search request {search_request_id}",
+                flush=True,
+            )
+
             llm_response = await self.llm.generate_reply(context)
             if not llm_response.is_success:
+                print(
+                    f"LLM invocation failed in search request {search_request_id}: {llm_response.code}/{llm_response.message}",
+                    flush=True,
+                )
                 return Response.fail(llm_response.message, llm_response.code)
             elif llm_response.payload is None:
                 return Response.fail("LLM reply is inexplicably empty", 500)
@@ -92,13 +118,21 @@ class QueryFlow(BaseQueryFlow):
                 answer=llm_reply,
                 sources=[
                     RatedSource(
-                        source=search_result.metadata.source, rating=search_result.score
+                        source=(
+                            search_result.metadata.source
+                            if search_result.metadata
+                            else "N/A"
+                        ),
+                        rating=search_result.score,
                     )
                     for search_result in search_results
                 ],
             )
 
             # The search request is done
+            print(
+                f"Search request {search_request_id} completed, cleaning up", flush=True
+            )
             if search_request_id in self.search_requests:
                 del self.search_requests[search_request_id]
 
