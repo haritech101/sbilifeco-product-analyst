@@ -1,5 +1,5 @@
 # sbilife/docling-reader
-FROM python:3.12
+FROM python:3.14-alpine
 
 WORKDIR /usr/local/docling-reader
 
