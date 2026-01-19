@@ -11,6 +11,9 @@ class EnvVars:
     vector_repo_proto = "VECTOR_REPO_PROTO"
     vector_repo_host = "VECTOR_REPO_HOST"
     vector_repo_port = "VECTOR_REPO_PORT"
+    id_name_repo_proto = "ID_NAME_REPO_PROTO"
+    id_name_repo_host = "ID_NAME_REPO_HOST"
+    id_name_repo_port = "ID_NAME_REPO_PORT"
 
 
 class Defaults:
@@ -26,3 +29,6 @@ class Defaults:
     vector_repo_proto = "http"
     vector_repo_host = "localhost"
     vector_repo_port = "80"
+    id_name_repo_proto = "http"
+    id_name_repo_host = "localhost"
+    id_name_repo_port = "80"

@@ -1,9 +1,15 @@
 from __future__ import annotations
 from io import BufferedIOBase, IOBase, RawIOBase, TextIOBase
+from sbilifeco.boundaries.id_name_repo import IDNameEntity, SortDirection, SortField
 from sbilifeco.boundaries.product_analyst.ingest_flow import BaseIngestFlow
 from sbilifeco.cp.common.http.client import HttpClient, Request
 from sbilifeco.models.base import Response
-from sbilifeco.cp.product_analyst.ingest_flow.paths import IngestFlowPaths
+from sbilifeco.cp.product_analyst.ingest_flow.paths import (
+    IngestFlowPaths,
+    Pagination,
+    SortDirection,
+    SortField,
+)
 
 
 class IngestFlowHttpClient(HttpClient, BaseIngestFlow):
@@ -55,8 +61,8 @@ class IngestFlowHttpClient(HttpClient, BaseIngestFlow):
             req = Request(
                 url=url,
                 method="POST",
+                data={"title": title},
                 files={
-                    "title": ("title", title, "text/plain"),
                     "material": ("material", triaged_source, content_type),
                 },
             )
@@ -69,5 +75,36 @@ class IngestFlowHttpClient(HttpClient, BaseIngestFlow):
 
             # Return response
             return response
+        except Exception as e:
+            return Response.error(e)
+
+    async def get_materials(
+        self,
+        page_size: int = -1,
+        page: int = -1,
+        sorts: dict[SortField, SortDirection] = {},
+    ) -> Response[list[IDNameEntity]]:
+        try:
+            # Form request
+            url = f"{self.url_base}{IngestFlowPaths.MATERIALS}"
+            req = Request(
+                url=url,
+                method="POST",
+                json=Pagination(
+                    page_size=page_size, page_num=page, sorts=sorts
+                ).model_dump(),
+            )
+
+            # Send request
+            res = await self.request_as_model(req)
+
+            # Triage response
+            if res.payload is not None:
+                res.payload = [
+                    IDNameEntity.model_validate(item) for item in res.payload
+                ]
+
+            # Return response
+            return res
         except Exception as e:
             return Response.error(e)

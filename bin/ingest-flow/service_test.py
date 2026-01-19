@@ -10,6 +10,7 @@ from sbilifeco.models.base import Response
 from shutil import rmtree
 
 # Import the necessary service(s) here
+from sbilifeco.boundaries.id_name_repo import SortField, SortDirection
 from sbilifeco.cp.product_analyst.ingest_flow.http_client import IngestFlowHttpClient
 from sbilifeco.cp.vector_repo.http_client import VectorRepoHttpClient
 from service import IngestFlowMicroservice
@@ -58,9 +59,9 @@ class Test(IsolatedAsyncioTestCase):
         #     await self.service.async_shutdown()
         patch.stopall()
         try:
-            ...
-        except Exception:
             await self.vector_repo_client.delete_by_criteria({"source": self.title})
+        except Exception:
+            ...
 
     async def test_ingest(self) -> None:
         # Arrange
@@ -90,3 +91,24 @@ class Test(IsolatedAsyncioTestCase):
 
         self.assertTrue(read_response.is_success, read_response.message)
         assert read_response.payload is not None
+
+    async def test_get_materials(self) -> None:
+        # Arrange
+        page_size = 5
+        page = 1
+        sorts = {SortField.CREATED_AT: SortDirection.DESCENDING}
+
+        # Act
+        response = await self.client.get_materials(page_size, page, sorts)
+
+        # Assert
+        self.assertTrue(response.is_success, response.message)
+        assert response.payload is not None
+        self.assertTrue(response.payload)
+
+        material = response.payload[0]
+        self.assertTrue(material.id)
+        self.assertTrue(material.created_at)
+        self.assertTrue(material.updated_at)
+        self.assertTrue(material.is_enabled)
+        self.assertTrue(material.name)

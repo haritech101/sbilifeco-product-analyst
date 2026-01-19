@@ -57,11 +57,14 @@ class FileSystemChromaDBTest(IsolatedAsyncioTestCase):
     async def test_create(self) -> None:
         # Arrange
         id = uuid4().hex
+        source_id = uuid4().hex
         record = VectorisedRecord(
             id=id,
             vector=[randint(0, 100) for _ in range(256)],
             document=self.faker.paragraph(),
-            metadata=RecordMetadata(source=" ".join(self.faker.words(3)), chunk_num=0),
+            metadata=RecordMetadata(
+                source_id=source_id, source=" ".join(self.faker.words(3)), chunk_num=0
+            ),
         )
 
         # Act
@@ -82,11 +85,14 @@ class FileSystemChromaDBTest(IsolatedAsyncioTestCase):
     async def test_update(self) -> None:
         # Arrange
         id = uuid4().hex
+        source_id = uuid4().hex
         record = VectorisedRecord(
             id=id,
             vector=[randint(0, 100) for _ in range(256)],
             document=self.faker.paragraph(),
-            metadata=RecordMetadata(source=" ".join(self.faker.words(3)), chunk_num=0),
+            metadata=RecordMetadata(
+                source_id=source_id, source=" ".join(self.faker.words(3)), chunk_num=0
+            ),
         )
         await self.service.crupdate(record)
 
@@ -111,11 +117,14 @@ class FileSystemChromaDBTest(IsolatedAsyncioTestCase):
     async def test_delete_by_id(self) -> None:
         # Arrange
         id = uuid4().hex
+        source_id = uuid4().hex
         record = VectorisedRecord(
             id=id,
             vector=[randint(0, 100) for _ in range(256)],
             document=self.faker.paragraph(),
-            metadata=RecordMetadata(source=" ".join(self.faker.words(3)), chunk_num=0),
+            metadata=RecordMetadata(
+                source_id=source_id, source=" ".join(self.faker.words(3)), chunk_num=0
+            ),
         )
         await self.service.crupdate(record)
 
@@ -137,11 +146,14 @@ class FileSystemChromaDBTest(IsolatedAsyncioTestCase):
     async def test_delete_by_criteria(self) -> None:
         # Arrange
         id = uuid4().hex
+        source_id = uuid4().hex
         record = VectorisedRecord(
             id=id,
             vector=[randint(0, 100) for _ in range(256)],
             document=self.faker.paragraph(),
-            metadata=RecordMetadata(source=" ".join(self.faker.words(3)), chunk_num=0),
+            metadata=RecordMetadata(
+                source_id=source_id, source=" ".join(self.faker.words(3)), chunk_num=0
+            ),
         )
         await self.service.crupdate(record)
 
@@ -165,11 +177,14 @@ class FileSystemChromaDBTest(IsolatedAsyncioTestCase):
     async def test_read_by_id(self) -> None:
         # Arrange
         id = uuid4().hex
+        source_id = uuid4().hex
         record = VectorisedRecord(
             id=id,
             vector=[randint(0, 100) for _ in range(256)],
             document=self.faker.paragraph(),
-            metadata=RecordMetadata(source=" ".join(self.faker.words(3)), chunk_num=0),
+            metadata=RecordMetadata(
+                source_id=source_id, source=" ".join(self.faker.words(3)), chunk_num=0
+            ),
         )
         await self.service.crupdate(record)
 
@@ -188,17 +203,20 @@ class FileSystemChromaDBTest(IsolatedAsyncioTestCase):
     async def test_read_by_criteria(self) -> None:
         # Arrange
         id = uuid4().hex
+        source_id = uuid4().hex
         record = VectorisedRecord(
             id=id,
             vector=[randint(0, 100) for _ in range(256)],
             document=self.faker.paragraph(),
-            metadata=RecordMetadata(source=" ".join(self.faker.words(3)), chunk_num=0),
+            metadata=RecordMetadata(
+                source_id=source_id, source=" ".join(self.faker.words(3)), chunk_num=0
+            ),
         )
         await self.service.crupdate(record)
 
         # Act
         read_response = await self.service.read_by_criteria(
-            {"source": record.metadata.source}
+            {"source_id": record.metadata.source_id if record.metadata else None}
         )
 
         # Assert
@@ -213,11 +231,14 @@ class FileSystemChromaDBTest(IsolatedAsyncioTestCase):
     async def test_search_by_vector(self) -> None:
         # Arrange
         id = uuid4().hex
+        source_id = uuid4().hex
         record = VectorisedRecord(
             id=id,
             vector=[randint(0, 100) for _ in range(256)],
             document=self.faker.paragraph(),
-            metadata=RecordMetadata(source=" ".join(self.faker.words(3)), chunk_num=0),
+            metadata=RecordMetadata(
+                source_id=source_id, source=" ".join(self.faker.words(3)), chunk_num=0
+            ),
         )
         await self.service.crupdate(record)
 

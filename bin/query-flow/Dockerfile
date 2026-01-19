@@ -1,16 +1,16 @@
 # sbilife/productanalyst-query-flow
-FROM python:3.12
+FROM python:3.14-alpine
 
 WORKDIR /usr/local/query-flow
 
 RUN pip install \
     --extra-index-url https://api.repoforge.io/yWf4uV/ \
     python-dotenv==1.1.1 \
-    sbilifeco-productanalyst-flow-query==0.1.0 \
+    sbilifeco-productanalyst-flow-query==0.1.1 \
     sbilifeco-productanalyst-http-server-query-flow==0.1.0 \
     sbilifeco-http-client-llm==0.1.6 \
     sbilifeco-http-client-vectoriser==0.1.0 \
-    sbilifeco-http-client-vector-repo==0.1.0
+    sbilifeco-http-client-vector-repo==0.1.1
 
 EXPOSE 80
 

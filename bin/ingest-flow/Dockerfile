@@ -1,16 +1,17 @@
-# sbilife/ingest-flow 
-FROM python:3.12
+# sbilife/ingest-flow
+FROM python:3.14-alpine
 
 WORKDIR /usr/local/ingest-flow
 
 RUN pip install \
     --extra-index-url https://api.repoforge.io/yWf4uV/ \
     python-dotenv==1.1.1 \
-    sbilifeco-productanalyst-flow-ingest==0.1.0 \
+    sbilifeco-productanalyst-flow-ingest==0.1.2 \
     sbilifeco-productanalyst-http-server-ingest-flow==0.1.0 \
     sbilifeco-http-client-material-reader==0.1.0 \
     sbilifeco-http-client-vectoriser==0.1.0 \
-    sbilifeco-http-client-vector-repo==0.1.0
+    sbilifeco-http-client-vector-repo==0.1.1 \
+    sbilifeco-http-client-id-name-repo==0.1.0
 
 EXPOSE 80
 

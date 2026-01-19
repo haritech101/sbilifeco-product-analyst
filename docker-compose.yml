@@ -7,12 +7,36 @@ services:
         command:
             - --api.insecure=true
             - --providers.docker=true
+            - --accesslog=true
+            - --log.level=DEBUG
         ports:
             - 11900:80
             - 11901:8080
     docling-serve:
         image: ghcr.io/docling-project/docling-serve-cpu:v1.9.0
         restart: always
+    qdrant:
+        image: qdrant/qdrant:latest
+        restart: always
+        ports:
+            - 11902:6333
+        volumes:
+            - ./.local/.qdrant:/qdrant/storage
+    qdrant-gateway:
+        image: sbilife/qdrant-gateway:latest
+        environment:
+            - VECTORISER_HTTP_PORT=80
+            - VECTOR_REPO_HTTP_PORT=81
+            - QDRANT_URL=http://qdrant:6333
+            - COLLECTION_NAME=insurance_material
+        restart: always
+        labels:
+            - traefik.http.routers.vectoriser.rule=PathPrefix(`/api/v1/vectors`)
+            - traefik.http.routers.vectoriser.service=vectoriser
+            - traefik.http.services.vectoriser.loadBalancer.server.url=http://qdrant-gateway
+            - traefik.http.routers.vector-repo.rule=PathPrefix(`/api/v1/vectorised-data`)
+            - traefik.http.routers.vector-repo.service=vector-repo
+            - traefik.http.services.vector-repo.loadBalancer.server.url=http://qdrant-gateway:81
     docling-reader:
         image: sbilife/docling-reader:latest
         environment:
@@ -21,40 +45,40 @@ services:
             - DOCLINGSERVE_HOST=docling-serve
             - DOCLINGSERVE_PORT=5001
         restart: always
-        labels:
-            - traefik.http.routers.material-reader.rule=PathPrefix(`/api/v1/materials`)
-    chromadb-gateway:
-        image: sbilife/chromadb-gateway
-        environment:
-            - HTTP_PORT_VECTORISER=80
-            - HTTP_PORT_VECTOR_REPO=81
-            - DB_PATH=/var/lib/chromadb
-            - COLLECTION_NAME=material
-        restart: always
-        volumes:
-            - ./.local/.chromadb:/var/lib/chromadb
-        labels:
-            - traefik.http.routers.vectoriser.rule=PathPrefix(`/api/v1/vectors`)
-            - traefik.http.routers.vectoriser.service=vectoriser
-            - traefik.http.services.vectoriser.loadBalancer.server.url=http://chromadb-gateway
-            - traefik.http.routers.vector-repo.rule=PathPrefix(`/api/v1/vectorised-data`)
-            - traefik.http.routers.vector-repo.service=vector-repo
-            - traefik.http.services.vector-repo.loadBalancer.server.url=http://chromadb-gateway:81
     ingest-flow:
         image: sbilife/ingest-flow:latest
         restart: always
         environment:
             - HTTP_PORT=80
-            - MATERIAL_READER_HOST=docling-reader
-            - VECTORISER_HOST=chromadb-gateway
+            - MATERIAL_READER_HOST=172.26.0.1
+            - MATERIAL_READER_PORT=11300
+            - VECTORISER_HOST=qdrant-gateway
             - VECTORISER_PORT=80
-            - VECTOR_REPO_HOST=chromadb-gateway
+            - VECTOR_REPO_HOST=qdrant-gateway
             - VECTOR_REPO_PORT=81
+            - ID_NAME_REPO_HOST=sqlite-gateway
         labels:
-            - traefik.http.routers.ingest-flow.rule=PathPrefix(`/api/v1/ingest-requests`)
+            - traefik.http.routers.ingest-flow--ingest.rule=PathPrefix(`/api/v1/ingest-requests`)
+            - traefik.http.routers.ingest-flow--materials.rule=PathPrefix(`/api/v1/material-list-requests`)
     query-flow:
         image: sbilife/productanalyst-query-flow:latest
         restart: always
         env_file: .local/query-flow.env
         labels:
             - traefik.http.routers.productanalyst-query-flow.rule=PathPrefix(`/api/v1/material-queries`)
+    sqlite-gateway:
+        image: sbilife/sqlite-gateway:latest
+        environment:
+            - HTTP_PORT=80
+            - DB_PATH=/var/lib/repo/entities.sqlite
+        volumes:
+            - .local/.sqlite:/var/lib/repo
+        restart: always
+        labels:
+            - traefik.http.routers.id-name-entities.rule=PathPrefix(`/api/v1/id-name-entities`)
+    ingest-flow-ui:
+        image: sbilife/productanalyst-ingest-flow-ui:latest
+        env_file: .local/ingest-flow-ui.env
+        restart: always
+        labels:
+            - traefik.http.routers.<router name>.rule=PathPrefix(`/ingest-ui`)

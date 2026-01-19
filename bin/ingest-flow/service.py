@@ -8,6 +8,7 @@ from sbilifeco.cp.product_analyst.ingest_flow.http_server import IngestFlowHttpS
 from sbilifeco.cp.material_reader.http_client import MaterialReaderHttpClient
 from sbilifeco.cp.vectoriser.http_client import VectoriserHttpClient
 from sbilifeco.cp.vector_repo.http_client import VectorRepoHttpClient
+from sbilifeco.cp.id_name_repo.http_client import IDNameRepoHttpClient
 
 
 class IngestFlowMicroservice:
@@ -33,6 +34,15 @@ class IngestFlowMicroservice:
         vector_repo_port = int(
             getenv(EnvVars.vector_repo_port, Defaults.vector_repo_port)
         )
+        id_name_repo_proto = getenv(
+            EnvVars.id_name_repo_proto, Defaults.id_name_repo_proto
+        )
+        id_name_repo_host = getenv(
+            EnvVars.id_name_repo_host, Defaults.id_name_repo_host
+        )
+        id_name_repo_port = int(
+            getenv(EnvVars.id_name_repo_port, Defaults.id_name_repo_port)
+        )
 
         # Gateways and flows
         self.material_reader = MaterialReaderHttpClient()
@@ -56,11 +66,19 @@ class IngestFlowMicroservice:
             .set_port(vector_repo_port)
         )
 
+        self.id_name_repo = IDNameRepoHttpClient()
+        (
+            self.id_name_repo.set_proto(id_name_repo_proto)
+            .set_host(id_name_repo_host)
+            .set_port(id_name_repo_port)
+        )
+
         self.ingest_flow = IngestFlow()
         (
             self.ingest_flow.set_material_reader(self.material_reader)
             .set_vectoriser(self.vectoriser)
             .set_vector_repo(self.vector_repo)
+            .set_id_name_repo(self.id_name_repo)
         )
         await self.ingest_flow.async_init()
 
