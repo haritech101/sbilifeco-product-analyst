@@ -2,25 +2,25 @@ const ingestUrl = "${API_BASE_URL}${API_INGEST_PATH}";
 const materialsUrl = "${API_BASE_URL}${API_MATERIALS_PATH}";
 
 const inputContentName = document.getElementById(
-    "input-content-name"
+    "input-content-name",
 ) as HTMLInputElement;
 const inputContentFile = document.getElementById(
-    "input-content-file"
+    "input-content-file",
 ) as HTMLInputElement;
 const actionUpload = document.getElementById(
-    "action-upload"
+    "action-upload",
 ) as HTMLButtonElement;
 const bannerFeedbackUpload = document.getElementById(
-    "banner-feedback-upload"
+    "banner-feedback-upload",
 ) as HTMLDivElement;
 const panelMaterials = document.getElementById(
-    "panel-materials"
+    "panel-materials",
 ) as HTMLDivElement;
 
 const leaveFeedback = (
     feedback: string,
     isError: boolean = false,
-    isSuccess: boolean = false
+    isSuccess: boolean = false,
 ) => {
     bannerFeedbackUpload.innerText = feedback;
 
@@ -46,7 +46,7 @@ const loadAndShowMaterials = async () => {
     const res = await fetch(req);
     if (!res.ok) {
         console.warn(
-            `Failed to load materials list: ${(await res.text()) || res.status}`
+            `Failed to load materials list: ${(await res.text()) || res.status}`,
         );
         return;
     }
@@ -56,7 +56,7 @@ const loadAndShowMaterials = async () => {
         console.warn(
             `Failed to load materials list: ${
                 api_response?.message || "Unknown error"
-            }`
+            }`,
         );
         return;
     }
@@ -66,10 +66,10 @@ const loadAndShowMaterials = async () => {
         .map(
             (material: any) => `
         <div class='row'>
-            <div class='col-md-2'>ID: ${material.name}</div>
-            <div class='col-md-2'>ID: ${material.created_at}</div>
+            <div class='col-md-2'>Name: ${material.name}</div>
+            <div class='col-md-2'>Created on: ${material.created_at}</div>
         </div>
-        `
+        `,
         )
         .join("\n");
 
@@ -88,7 +88,7 @@ const processUpload = async () => {
     if (!res.ok) {
         leaveFeedback(
             `Upload failed with status ${(await res.text()) || res.status}`,
-            true
+            true,
         );
         return;
     }
@@ -97,7 +97,7 @@ const processUpload = async () => {
     if (api_response?.is_success !== true) {
         leaveFeedback(
             `Upload failed: ${api_response?.message || "Unknown error"}`,
-            true
+            true,
         );
         return;
     }
@@ -111,7 +111,7 @@ const processUpload = async () => {
     dataToPost.set(
         "material",
         inputContentFile?.files?.[0] ||
-            new Blob([], { type: "application/octet-stream" })
+            new Blob([], { type: "application/octet-stream" }),
     );
 
     req = new Request(`${ingestUrl}/${ingest_request_id}`, {
@@ -123,7 +123,7 @@ const processUpload = async () => {
     if (!res.ok) {
         leaveFeedback(
             `Upload failed with status ${(await res.text()) || res.status}`,
-            true
+            true,
         );
         return;
     }
@@ -132,7 +132,7 @@ const processUpload = async () => {
     if (api_response?.is_success !== true) {
         leaveFeedback(
             `Upload failed: ${api_response?.message || "Unknown error"}`,
-            true
+            true,
         );
         return;
     }
@@ -167,3 +167,4 @@ const onUploadTriggered = async () => {
 actionUpload.addEventListener("click", async () => {
     await onUploadTriggered();
 });
+
