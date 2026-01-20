@@ -53,6 +53,78 @@ class Page {
         }
 
         await this.appendQuote("You", this.inputQuery.value);
+
+        await this.showFeedback("Processing your query...");
+
+        try {
+            console.log("Requesting a material query session");
+            let response = await fetch(materialQueriesUrl, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+
+            if (!response.ok) {
+                await this.showFeedback(
+                    (await response.text()) || "Failed to process query.",
+                );
+                return;
+            }
+
+            let apiResponse = await response.json();
+            if (!apiResponse.is_success) {
+                await this.showFeedback(
+                    apiResponse.message || "Failed to process query.",
+                );
+                return;
+            }
+
+            const requestId = apiResponse.payload;
+            console.log(`Request session ID: ${requestId}`);
+
+            console.log(`Sending query as part of session ${requestId}`);
+            response = await fetch(`${materialQueriesUrl}/${requestId}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    request_id: requestId,
+                    query: this.inputQuery.value,
+                }),
+            });
+
+            if (!response.ok) {
+                await this.showFeedback(
+                    (await response.text()) || "Failed to process query.",
+                );
+                return;
+            }
+
+            apiResponse = await response.json();
+            if (!apiResponse.is_success) {
+                await this.showFeedback(
+                    apiResponse.message || "Failed to process query.",
+                );
+                return;
+            }
+
+            const answer = apiResponse.payload;
+            console.log("Received answer from API");
+
+            await this.appendQuote("Me", answer);
+            await this.showFeedback("");
+        } catch (error) {
+            console.error("Error processing query:", error);
+            await this.showFeedback(
+                "An error occurred while processing your query. Please try again later.",
+            );
+        } finally {
+            if (this.inputQuery) {
+                this.inputQuery.value = "";
+            }
+        }
     }
 
     async render(props: Record<string, unknown> = {}) {
