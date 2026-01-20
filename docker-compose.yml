@@ -79,4 +79,10 @@ services:
         env_file: .local/ingest-flow-ui.env
         restart: always
         labels:
-            - traefik.http.routers.<router name>.rule=PathPrefix(`/ingest-ui`)
+            - traefik.http.routers.prodan-ingest-flow-ui.rule=PathPrefix(`/ingest-ui`)
+    query-flow-ui:
+        image: sbilife/productanalyst-query-flow-ui:latest
+        env_file: .local/query-flow-ui.env
+        restart: always
+        labels:
+            - traefik.http.routers.prodan-query-flow-ui.rule=PathPrefix(`/query-ui`)

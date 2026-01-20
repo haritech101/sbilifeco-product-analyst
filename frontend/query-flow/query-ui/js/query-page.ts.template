@@ -1,0 +1,165 @@
+const materialQueriesUrl = "${API_BASE_URL}${MATERIAL_QUERIES_PATH}";
+
+document.addEventListener("DOMContentLoaded", async () => {
+    console.log("Document loaded, initializing page...");
+    const page = new Page();
+    await page.init();
+    await page.render();
+});
+
+class Page {
+    appContainer: HTMLDivElement | null = null;
+    actionSubmit: HTMLButtonElement | null = null;
+    inputQuery: HTMLInputElement | null = null;
+    panelFeedback: HTMLDivElement | null = null;
+    panelHistory: HTMLDivElement | null = null;
+
+    constructor() {}
+
+    async init() {
+        this.appContainer = document.getElementById("app") as HTMLDivElement;
+    }
+
+    async showFeedback(feedback: string) {
+        console.log("Showing feedback:", feedback);
+        if (this.panelFeedback) {
+            this.panelFeedback.innerText = feedback || "";
+        }
+    }
+
+    async appendQuote(who: string, text: string) {
+        if (!this.panelHistory) {
+            console.error("Conversion panel not found");
+            return;
+        }
+
+        this.panelHistory.innerHTML += `
+        <p class='mb-2'>
+            <strong>${who}:</strong>
+            ${text}
+        </p>
+        `;
+    }
+
+    async onSubmit() {
+        console.log("Submit button clicked");
+
+        if (!this.inputQuery?.value) {
+            console.log("Input query is empty");
+            await this.showFeedback(
+                "Question cannot be empty. Please type your question before submitting.",
+            );
+            return;
+        }
+
+        await this.appendQuote("You", this.inputQuery.value);
+
+        await this.showFeedback("Processing your query...");
+
+        try {
+            console.log("Requesting a material query session");
+            let response = await fetch(materialQueriesUrl, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+
+            if (!response.ok) {
+                await this.showFeedback(
+                    (await response.text()) || "Failed to process query.",
+                );
+                return;
+            }
+
+            let apiResponse = await response.json();
+            if (!apiResponse.is_success) {
+                await this.showFeedback(
+                    apiResponse.message || "Failed to process query.",
+                );
+                return;
+            }
+
+            const requestId = apiResponse.payload;
+            console.log(`Request session ID: ${requestId}`);
+
+            console.log(`Sending query as part of session ${requestId}`);
+            response = await fetch(`${materialQueriesUrl}/${requestId}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    request_id: requestId,
+                    query: this.inputQuery.value,
+                }),
+            });
+
+            if (!response.ok) {
+                await this.showFeedback(
+                    (await response.text()) || "Failed to process query.",
+                );
+                return;
+            }
+
+            apiResponse = await response.json();
+            if (!apiResponse.is_success) {
+                await this.showFeedback(
+                    apiResponse.message || "Failed to process query.",
+                );
+                return;
+            }
+
+            const answer = apiResponse.payload;
+            console.log("Received answer from API");
+
+            await this.appendQuote("Me", answer);
+            await this.showFeedback("");
+        } catch (error) {
+            console.error("Error processing query:", error);
+            await this.showFeedback(
+                "An error occurred while processing your query. Please try again later.",
+            );
+        } finally {
+            if (this.inputQuery) {
+                this.inputQuery.value = "";
+            }
+        }
+    }
+
+    async render(props: Record<string, unknown> = {}) {
+        if (!this.appContainer) {
+            console.error("App container not found");
+            throw new Error("App container not found");
+        }
+
+        console.log("Rendering page content...");
+
+        const html = `
+        <h1>Product Query</h1>
+        <div id='panel-history' class="flex-grow-1 mt-2 border"></div>
+        <div id='panel-feedback' class='mt-2'></div>
+        <div class="d-flex flex-row gap-2">
+            <input id='input-query' type='text' placeholder='Enter your query here' class='form-control mt-2'/>
+            <button id='action-submit' class='btn btn-primary mt-2'>Submit</button>
+        </div>
+        `;
+
+        this.appContainer.innerHTML = html;
+
+        this.inputQuery = document.getElementById(
+            "input-query",
+        ) as HTMLInputElement;
+        this.actionSubmit = document.getElementById(
+            "action-submit",
+        ) as HTMLButtonElement;
+        this.panelFeedback = document.getElementById(
+            "panel-feedback",
+        ) as HTMLDivElement;
+        this.panelHistory = document.getElementById(
+            "panel-history",
+        ) as HTMLDivElement;
+
+        this.actionSubmit?.addEventListener("click", this.onSubmit.bind(this));
+    }
+}
