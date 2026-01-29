@@ -60,7 +60,7 @@ class Test(IsolatedAsyncioTestCase):
 
     def handle_request(self, reply: str):
         async def __handle(route: Route, request: Request) -> None:
-            print(request.url)
+            print(f"Outbound request to --> {request.url}")
             if request.url.endswith(self.material_queries_path):
                 await route.fulfill(
                     status=200, json=Response.ok(uuid4().hex).model_dump()
@@ -70,6 +70,8 @@ class Test(IsolatedAsyncioTestCase):
                     status=200,
                     json=Response.ok(reply).model_dump(),
                 )
+            else:
+                await route.continue_()
 
         return __handle
 
@@ -111,7 +113,7 @@ class Test(IsolatedAsyncioTestCase):
         reply = self.faker.paragraph()
 
         await self.page.route(
-            f"{self.api_base_url}/**",
+            "**",
             self.handle_request(reply),
         )
 
