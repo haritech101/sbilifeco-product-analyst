@@ -32,7 +32,7 @@ class FlowTest(IsolatedAsyncioTestCase):
             Defaults.material_queries_path,
         )
 
-        self.url = f"http://localhost:{http_port}/query-ui"
+        self.url = f"http://localhost:{http_port}/product-query-ui"
 
         # Initialise the service(s) here
         self.faker = Faker()
@@ -57,7 +57,7 @@ class FlowTest(IsolatedAsyncioTestCase):
         input_query = self.page.locator("#input-query")
         button_submit = self.page.locator("#action-submit")
         panel_history = self.page.locator("#panel-history")
-        query = self.faker.sentence()
+        query = "What insurance plan can you talk to me about?"
 
         # Act
         await input_query.fill(query)

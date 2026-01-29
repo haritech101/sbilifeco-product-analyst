@@ -17,6 +17,7 @@ from sbilifeco.models.base import Response
 from re import compile
 from asyncio import sleep
 from playwright.async_api import async_playwright, expect, Request, Route
+from sbilifeco.boundaries.product_analyst.query_flow import RatedAnswer
 
 
 class Test(IsolatedAsyncioTestCase):
@@ -32,7 +33,7 @@ class Test(IsolatedAsyncioTestCase):
             Defaults.material_queries_path,
         )
 
-        self.url = f"http://localhost:{http_port}/query-ui"
+        self.url = f"http://localhost:{http_port}/product-query-ui"
 
         # Initialise the service(s) here
         self.faker = Faker()
@@ -60,7 +61,7 @@ class Test(IsolatedAsyncioTestCase):
 
     def handle_request(self, reply: str):
         async def __handle(route: Route, request: Request) -> None:
-            print(request.url)
+            print(f"Outbound request to --> {request.url}")
             if request.url.endswith(self.material_queries_path):
                 await route.fulfill(
                     status=200, json=Response.ok(uuid4().hex).model_dump()
@@ -68,8 +69,12 @@ class Test(IsolatedAsyncioTestCase):
             elif self.material_queries_path in request.url:
                 await route.fulfill(
                     status=200,
-                    json=Response.ok(reply).model_dump(),
+                    json=Response.ok(
+                        RatedAnswer(answer=reply, sources=[])
+                    ).model_dump(),
                 )
+            else:
+                await route.continue_()
 
         return __handle
 
@@ -111,7 +116,7 @@ class Test(IsolatedAsyncioTestCase):
         reply = self.faker.paragraph()
 
         await self.page.route(
-            f"{self.api_base_url}/**",
+            "**",
             self.handle_request(reply),
         )
 
