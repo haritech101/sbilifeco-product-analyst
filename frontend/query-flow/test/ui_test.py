@@ -17,6 +17,7 @@ from sbilifeco.models.base import Response
 from re import compile
 from asyncio import sleep
 from playwright.async_api import async_playwright, expect, Request, Route
+from sbilifeco.boundaries.product_analyst.query_flow import RatedAnswer
 
 
 class Test(IsolatedAsyncioTestCase):
@@ -68,7 +69,9 @@ class Test(IsolatedAsyncioTestCase):
             elif self.material_queries_path in request.url:
                 await route.fulfill(
                     status=200,
-                    json=Response.ok(reply).model_dump(),
+                    json=Response.ok(
+                        RatedAnswer(answer=reply, sources=[])
+                    ).model_dump(),
                 )
             else:
                 await route.continue_()
