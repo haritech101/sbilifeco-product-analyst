@@ -12,8 +12,8 @@ COPY package.json package-lock.json ./
 RUN npm install --omit=dev
 
 COPY run.sh /app/query-flow/
-COPY query-ui/css/* /app/query-flow/query-ui/css/
-COPY query-ui/index.html /app/query-flow/query-ui/
-COPY query-ui/js/*.js /app/query-flow/query-ui/js/
+COPY product-query-ui/css/* /app/query-flow/product-query-ui/css/
+COPY product-query-ui/index.html /app/query-flow/product-query-ui/
+COPY product-query-ui/js/*.js /app/query-flow/product-query-ui/js/
 
 ENTRYPOINT [ "sh", "./run.sh" ]

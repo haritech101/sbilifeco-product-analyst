@@ -85,4 +85,4 @@ services:
         env_file: .local/query-flow-ui.env
         restart: always
         labels:
-            - traefik.http.routers.prodan-query-flow-ui.rule=PathPrefix(`/query-ui`)
+            - traefik.http.routers.prodan-query-flow-ui.rule=PathPrefix(`/product-query-ui`)
