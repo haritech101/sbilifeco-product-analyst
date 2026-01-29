@@ -32,7 +32,7 @@ class Test(IsolatedAsyncioTestCase):
             Defaults.material_queries_path,
         )
 
-        self.url = f"http://localhost:{http_port}/query-ui"
+        self.url = f"http://localhost:{http_port}/product-query-ui"
 
         # Initialise the service(s) here
         self.faker = Faker()
