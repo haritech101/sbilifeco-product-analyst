@@ -56,15 +56,7 @@ services:
     ingest-flow:
         image: sbilife/ingest-flow:latest
         restart: always
-        environment:
-            - HTTP_PORT=80
-            - MATERIAL_READER_HOST=172.26.0.1
-            - MATERIAL_READER_PORT=11300
-            - VECTORISER_HOST=qdrant-gateway
-            - VECTORISER_PORT=80
-            - VECTOR_REPO_HOST=qdrant-gateway
-            - VECTOR_REPO_PORT=81
-            - ID_NAME_REPO_HOST=sqlite-gateway
+        env_file: .local/ingest-flow.env
         labels:
             - traefik.http.routers.ingest-flow--ingest.rule=PathPrefix(`/api/v1/ingest-requests`)
             - traefik.http.routers.ingest-flow--materials.rule=PathPrefix(`/api/v1/material-list-requests`)
