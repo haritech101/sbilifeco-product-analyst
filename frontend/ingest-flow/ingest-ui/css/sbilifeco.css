@@ -1,0 +1,4 @@
+.blue-gradient {
+    background: linear-gradient(90deg, #ffffff 0%, #b6d7ff 50%, #ffffff 100%);
+    min-height: 100vh;
+}

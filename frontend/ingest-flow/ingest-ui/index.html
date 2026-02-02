@@ -6,40 +6,132 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <script type="module" src="js/ingest-page.js"></script>
         <link rel="stylesheet" href="css/bootstrap.min.css" />
+        <link rel="stylesheet" href="css/sbilifeco.css" />
         <title>Product Analyst Content Manager</title>
     </head>
-    <body>
-        <div class="container border m-3 p-2">
-            <h1>Product Analyst Content Manager</h1>
+    <body class="blue-gradient">
+        <!-- Header -->
+        <nav class="navbar navbar-dark bg-primary shadow-sm">
+            <div class="container-fluid">
+                <span class="navbar-brand mb-0 h1">
+                    🗃️ Product Analyst Content Manager
+                </span>
+            </div>
+        </nav>
 
-            <!-- List of all uploaded content  -->
-            <div class="container border p-2 mt-3">
-                <label for="input-content-name" class="form-label"
-                    >Name of the content</label
-                >
-                <input
-                    type="text"
-                    class="form-control"
-                    id="input-content-name"
-                />
-                <label for="input-content-file" class="form-label mt-3"
-                    >Select content file to upload</label
-                >
-                <input
-                    type="file"
-                    class="form-control"
-                    id="input-content-file"
-                />
-                <div id="banner-feedback-upload" class="mt-3"></div>
-                <button
-                    id="action-upload"
-                    class="btn btn-primary form-control mt-3"
-                >
-                    Upload
-                </button>
+        <div class="container mt-4">
+            <!-- Welcome Section -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card shadow border-0 bg-white">
+                        <div
+                            class="card-body text-center bg-light border-bottom"
+                        >
+                            <h1 class="card-title h3 mb-2 text-dark">
+                                Welcome to Content Manager
+                            </h1>
+                            <p class="card-text mb-0 text-muted">
+                                Upload and manage your product analysis content
+                                efficiently
+                            </p>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="container border p-2 mt-3" id="panel-materials"></div>
+            <!-- Upload Section -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div
+                        class="card shadow border-0 bg-white border-start border-primary border-4"
+                    >
+                        <div class="card-header bg-white border-bottom">
+                            <h5 class="card-title text-primary mb-0">
+                                ☁️ Upload New Content
+                            </h5>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="mb-4">
+                                <label
+                                    for="input-content-name"
+                                    class="form-label fw-bold text-dark"
+                                >
+                                    Content Name
+                                </label>
+                                <input
+                                    type="text"
+                                    class="form-control form-control-lg border-2"
+                                    id="input-content-name"
+                                    placeholder="Enter a descriptive name for your content"
+                                />
+                            </div>
+
+                            <div class="mb-4">
+                                <label
+                                    for="input-content-file"
+                                    class="form-label fw-bold text-dark"
+                                >
+                                    Select File
+                                </label>
+                                <input
+                                    type="file"
+                                    class="form-control form-control-lg border-2"
+                                    id="input-content-file"
+                                />
+                            </div>
+
+                            <div id="banner-feedback-upload" class="mb-3"></div>
+
+                            <div class="d-grid">
+                                <button
+                                    id="action-upload"
+                                    class="btn btn-primary btn-lg"
+                                >
+                                    ⬆️ Upload Content
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Materials Section -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div
+                        class="card shadow border-0 bg-white border-start border-primary border-4"
+                    >
+                        <div class="card-header bg-white border-bottom">
+                            <h5 class="card-title text-primary mb-0">
+                                📁 Uploaded Content
+                            </h5>
+                        </div>
+                        <div class="card-body p-4" id="panel-materials">
+                            <div class="text-center text-muted py-5">
+                                <div class="display-1 mb-3 opacity-50">📄</div>
+                                <p class="mb-0">
+                                    No content uploaded yet. Upload your first
+                                    file above to get started.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
+
+        <!-- Footer -->
+        <footer class="bg-dark text-light mt-5 py-4">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12 text-center">
+                        <p class="mb-0">
+                            &copy; 2026 Product Analyst Content Manager. All
+                            rights reserved.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </footer>
     </body>
 </html>
