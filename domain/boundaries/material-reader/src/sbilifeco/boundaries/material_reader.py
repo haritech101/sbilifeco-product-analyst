@@ -1,6 +1,6 @@
 from __future__ import annotations
 from io import BufferedIOBase, RawIOBase, TextIOBase
-from typing import Protocol
+from typing import Protocol, AsyncIterator
 from sbilifeco.models.base import Response
 from uuid import uuid4
 
@@ -29,6 +29,13 @@ class BaseMaterialReader:
         self, material_id: str
     ) -> Response[str | bytes | bytearray]:
         """Reads the next chunk of material and returns a Response containing the chunk data."""
+        ...
+
+    async def read_and_chunk(
+        self,
+        material: str | bytes | bytearray | RawIOBase | BufferedIOBase | TextIOBase,
+    ) -> Response[AsyncIterator[str | bytes]]:
+        """Reads material and returns a Response containing an AsyncIterator that yields chunks of the material."""
         ...
 
 
