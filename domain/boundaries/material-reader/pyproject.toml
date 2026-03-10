@@ -7,8 +7,8 @@ where = ["src"]
 
 [project]
 name = "sbilifeco-boundary-material-reader"
-version = "0.1.0"
-description = "description"
+version = "0.2.0"
+description = "Contract methods to read raw material and return it in logically divided chunks."
 dependencies = [
-    "sbilifeco-models-base>=0.1.3"
+    "sbilifeco-models-base>=0.1.4"
 ]
