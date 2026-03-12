@@ -6,8 +6,8 @@ WORKDIR /usr/local/docling-reader
 RUN pip install \
     --extra-index-url https://api.repoforge.io/yWf4uV/ \
     python-dotenv==1.1.1 \
-    sbilifeco-gateway-pdf-readers==0.1.0 \
-    sbilifeco-http-server-material-reader==0.1.1
+    sbilifeco-gateway-pdf-readers==0.2.0 \
+    sbilifeco-http-server-material-reader==0.2.0
 
 EXPOSE 80
 

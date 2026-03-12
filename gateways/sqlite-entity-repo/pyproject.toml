@@ -7,9 +7,9 @@ where = ["src"]
 
 [project]
 name = "sbilifeco-gateway-sqlite"
-version = "0.1.0"
+version = "0.1.1"
 description = "Gateway to a SQLite database"
 dependencies = [
-    "sbilifeco-models-base>=0.1.3",
-    "sbilifeco-boundary-id-name-repo>=0.1.0"
+    "sbilifeco-models-base>=0.1.4",
+    "sbilifeco-boundary-id-name-repo>=0.1.1"
 ]

@@ -7,8 +7,8 @@ where = ["src"]
 
 [project]
 name = "sbilifeco-productanalyst-boundary-ingest-flow"
-version = "0.1.0"
+version = "0.1.2"
 description = "Flow for ingestion of content"
 dependencies = [
-    "sbilifeco-models-base>=0.1.3"
+    "sbilifeco-models-base>=0.1.4"
 ]

@@ -7,9 +7,9 @@ where = ["src"]
 
 [project]
 name = "sbilifeco-paths-id-name-repo"
-version = "0.1.0"
+version = "0.1.1"
 description = "Paths to access id name repo using network communication"
 dependencies = [
     "pydantic>=2.11.9",
-    "sbilifeco-boundary-id-name-repo>=0.1.0"
+    "sbilifeco-boundary-id-name-repo>=0.1.1"
 ]
