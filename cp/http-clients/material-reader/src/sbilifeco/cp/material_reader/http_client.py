@@ -1,6 +1,11 @@
 from __future__ import annotations
 
 from io import BufferedIOBase, RawIOBase, TextIOBase
+from typing import AsyncIterator
+from traceback import format_exc
+from requests import Session
+from functools import partial
+from asyncio import get_running_loop
 
 from sbilifeco.boundaries.material_reader import BaseMaterialReader
 from sbilifeco.cp.common.http.client import HttpClient, Request
@@ -66,3 +71,71 @@ class MaterialReaderHttpClient(HttpClient, BaseMaterialReader):
             return res
         except Exception as e:
             return Response.error(e)
+
+    async def read_and_chunk(
+        self,
+        material: str | bytes | bytearray | RawIOBase | BufferedIOBase | TextIOBase,
+    ) -> Response[AsyncIterator[str | bytes]]:
+        try:
+            # Form request
+            url = f"{self.url_base}{MaterialReaderPaths.STREAMS}"
+
+            content_type = ""
+            to_be_posted: str | bytes | bytearray | None = None
+            if isinstance(material, (bytes, bytearray)):
+                to_be_posted = material
+                content_type = "application/octet-stream"
+            elif isinstance(material, str):
+                to_be_posted = material
+                content_type = "text/plain; charset=utf-8"
+            elif isinstance(material, (RawIOBase, BufferedIOBase)):
+                content_type = "application/octet-stream"
+                to_be_posted = material.read()
+            elif isinstance(material, TextIOBase):
+                content_type = "text/plain; charset=utf-8"
+                to_be_posted = material.read()
+
+            if not to_be_posted:
+                return Response.fail("Cannot determine the type of material provided")
+
+            req = Request(
+                url=url,
+                method="POST",
+                headers={"Content-Type": content_type},
+                data=to_be_posted,
+            )
+
+            # Send request
+            session = Session()
+            loop = get_running_loop()
+            http_response = await loop.run_in_executor(
+                None, partial(session.send, req.prepare(), stream=True)
+            )
+
+            # Triage response
+            if not http_response.ok:
+                return Response.fail(
+                    f"Failed to read and chunk material: {http_response.status_code}: {http_response.text}"
+                )
+
+            async def __stream():
+                iterator = http_response.iter_content(chunk_size=4096)
+                try:
+                    while True:
+                        chunk = await loop.run_in_executor(None, next, iterator, None)
+                        if chunk is None:
+                            break
+                        yield chunk
+                finally:
+                    http_response.close()
+                    session.close()
+
+            # Return response
+            return Response.ok(__stream())
+
+        except Exception as e:
+            print(f"Error: {e}")
+            print(format_exc())
+            return Response.error(e)
+        finally:
+            ...

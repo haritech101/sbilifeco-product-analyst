@@ -74,3 +74,26 @@ class Test(IsolatedAsyncioTestCase):
         # Assert
         self.assertTrue(response.is_success, response.message)
         assert response.payload is not None
+
+    async def test_read_and_chunk(self) -> None:
+        async def __stream_chunks():
+            for _ in range(randint(1, 5)):
+                yield self.faker.text().encode("utf-8")
+
+        # Arrange
+        material = self.faker.text()
+        read_and_chunk = patch.object(
+            self.material_reader,
+            "read_and_chunk",
+            return_value=Response.ok(__stream_chunks()),
+        ).start()
+
+        # Act
+        response = await self.client.read_and_chunk(material)
+
+        # Assert
+        self.assertTrue(response.is_success, response.message)
+        assert response.payload is not None
+
+        async for chunk in response.payload:
+            self.assertTrue(chunk)

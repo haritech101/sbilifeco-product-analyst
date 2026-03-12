@@ -4,6 +4,7 @@ from sbilifeco.models.base import Response
 from sbilifeco.cp.common.http.server import HttpServer
 from sbilifeco.boundaries.material_reader import BaseMaterialReader
 from sbilifeco.cp.material_reader.paths import MaterialReaderPaths
+from fastapi.responses import StreamingResponse, PlainTextResponse
 
 
 class MaterialReaderHttpServer(HttpServer):
@@ -55,3 +56,44 @@ class MaterialReaderHttpServer(HttpServer):
                 return response
             except Exception as e:
                 return Response.error(e)
+
+        @self.post(MaterialReaderPaths.STREAMS)
+        async def read_and_chunk(req: Request):
+            # Triage
+            content_type = req.headers.get("Content-Type", "text/plain")
+            material: bytes | str | None = None
+
+            if content_type == "application/octet-stream":
+                material = await req.body()
+            elif content_type.startswith("text/plain"):
+                material = (await req.body()).decode()
+
+            if material is None:
+                return PlainTextResponse(
+                    "Unable to determine material type", status_code=400
+                )
+
+            # Gateway call
+            response = await self.material_reader.read_and_chunk(material)
+
+            # Triage response
+            if not response.is_success:
+                return PlainTextResponse(
+                    f"Error reading material: {response.message}",
+                    status_code=response.code,
+                )
+
+            if response.payload is None:
+                return PlainTextResponse(
+                    "Material to stream is inexplicable blank", status_code=500
+                )
+
+            async def __stream():
+                if response.payload is None:
+                    return
+
+                async for chunk in response.payload:
+                    yield chunk
+
+            # Return
+            return StreamingResponse(response.payload, media_type=content_type)
