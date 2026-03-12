@@ -71,17 +71,15 @@ class IngestFlowTest(IsolatedAsyncioTestCase):
 
         num_chunks = 3
         chunks: list[str | None] = [self.faker.paragraph() for _ in range(num_chunks)]
-        chunks.append(None)  # Indicate end of chunks
 
-        read_material = patch.object(
+        async def __serve_chunk():
+            for chunk in chunks:
+                yield chunk
+
+        read_and_chunk = patch.object(
             self.material_reader,
-            "read_material",
-            return_value=Response.ok(read_material_id),
-        ).start()
-        get_next_chunk = patch.object(
-            self.material_reader,
-            "read_next_chunk",
-            side_effect=[Response.ok(chunk) for chunk in chunks],
+            "read_and_chunk",
+            return_value=Response.ok(__serve_chunk()),
         ).start()
         vectorise = patch.object(
             self.vectoriser,
@@ -114,19 +112,14 @@ class IngestFlowTest(IsolatedAsyncioTestCase):
         self.assertTrue(ingest_response.is_success, ingest_response.message)
 
         # Reading of material should be requested
-        read_material.assert_called_once_with(sample_data)
+        read_and_chunk.assert_called_once_with(sample_data)
 
         # Material ID and title should be stored as an entity
         crupdate_entity.assert_called_once()
-        entity = crupdate_entity.call_args_list[0][0][1]
+        entity = crupdate_entity.call_args.args[1]
         assert isinstance(entity, IDNameEntity)
 
         self.assertEqual(entity.name, title)
-
-        # Chunks should be read until none are left
-        get_next_chunk.assert_called()
-        self.assertEqual(get_next_chunk.call_count, num_chunks + 1)
-        get_next_chunk.assert_any_call(read_material_id)
 
         # Chunks should be vectorised
         vectorise.assert_called()
@@ -136,12 +129,12 @@ class IngestFlowTest(IsolatedAsyncioTestCase):
         self.assertEqual(crupdate_material.call_count, num_chunks)
 
         for i in range(num_chunks):
-            self.assertEqual(vectorise.call_args_list[i][0][1], chunks[i])
+            self.assertEqual(vectorise.call_args_list[i].args[1], chunks[i])
             self.assertEqual(
-                crupdate_material.call_args_list[i][0][0].document, chunks[i]
+                crupdate_material.call_args_list[i].args[0].document, chunks[i]
             )
             self.assertEqual(
-                crupdate_material.call_args_list[i][0][0].metadata.source, title
+                crupdate_material.call_args_list[i].args[0].metadata.source, title
             )
         ...
 

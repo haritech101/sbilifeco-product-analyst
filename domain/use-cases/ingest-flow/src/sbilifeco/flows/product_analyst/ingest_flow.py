@@ -20,6 +20,8 @@ from sbilifeco.models.vectorisation import VectorisedRecord, RecordMetadata
 
 
 class IngestFlow(BaseIngestFlow):
+    LOGICAL_CHUNK_DELIMITER = "#=====#"
+
     def __init__(self) -> None:
         super().__init__()
         self.ingestion_requests: dict[str, Any] = {}
@@ -65,20 +67,18 @@ class IngestFlow(BaseIngestFlow):
         try:
             # Read from source
             print("Ask material reader to read from source")
-            read_response = await self.material_reader.read_material(source)
+            read_response = await self.material_reader.read_and_chunk(source)
             if not read_response.is_success:
                 print(f"Error while reading material: {read_response.message}")
                 return Response.fail(read_response.message, read_response.code)
             elif read_response.payload is None:
-                return Response.fail("Material ID is inexplicably empty", 500)
-            material_id = read_response.payload
+                return Response.fail("Sequence of chunks is inexplicably empty", 500)
 
-            source_id = uuid4().hex
-
+            material_id = uuid4().hex
             entity_request_id = uuid4().hex
-            entity = IDNameEntity(id=source_id, name=title, created_at=datetime.now())
+            entity = IDNameEntity(id=material_id, name=title, created_at=datetime.now())
 
-            print(f"Mark an entry to map ID {source_id} to name {title}")
+            print(f"Mark an entry to map ID {material_id} to name {title}")
             entity_response = await self.id_name_repo.crupdate(
                 entity_request_id, entity
             )
@@ -88,31 +88,28 @@ class IngestFlow(BaseIngestFlow):
                 )
                 return Response.fail(entity_response.message, entity_response.code)
 
-            are_chunks_left = True
             chunk_num = 0
+            logical_chunk = ""
+            async for network_chunk in read_response.payload:
+                if isinstance(network_chunk, (bytes, bytearray, memoryview)):
+                    network_chunk = bytes(network_chunk).decode("utf-8")
 
-            while are_chunks_left:
-                print(
-                    f"Chunks are left to read, ask material reader for chunk {chunk_num}"
-                )
-                chunk_response = await self.material_reader.read_next_chunk(material_id)
-                if not chunk_response.is_success:
-                    print(
-                        f"Error while reading chunk {chunk_num}: {chunk_response.message}"
-                    )
-                    return Response.fail(chunk_response.message, chunk_response.code)
-                elif chunk_response.payload is None:
-                    print("No more chunks left")
-                    are_chunks_left = False
+                if not network_chunk:
+                    print(f"Chunk {chunk_num} is empty, skipping")
                     continue
 
-                print(f"Chunk {chunk_num} read")
-                chunk = chunk_response.payload
+                logical_chunk += network_chunk
+
+                if self.LOGICAL_CHUNK_DELIMITER not in logical_chunk:
+                    continue
+
+                delimited_content = logical_chunk.split(self.LOGICAL_CHUNK_DELIMITER)
+                logical_chunk = delimited_content[0]
 
                 vectorise_request_id = uuid4().hex
                 print(f"Ask vectoriser to vectorise chunk {chunk_num}")
                 vector_response = await self.vectoriser.vectorise(
-                    vectorise_request_id, chunk
+                    vectorise_request_id, logical_chunk
                 )
                 if not vector_response.is_success:
                     print(
@@ -130,9 +127,9 @@ class IngestFlow(BaseIngestFlow):
                 record = VectorisedRecord(
                     id=record_id,
                     vector=vector,
-                    document=chunk,
+                    document=title + "\n\n" + logical_chunk,
                     metadata=RecordMetadata(
-                        source_id=source_id, chunk_num=chunk_num, source=title
+                        source_id=material_id, chunk_num=chunk_num, source=title
                     ),
                 )
 
@@ -148,6 +145,10 @@ class IngestFlow(BaseIngestFlow):
                 print(f"Chunk {chunk_num} vector stored in vector repo")
 
                 chunk_num += 1
+
+                logical_chunk = (
+                    delimited_content[1] if len(delimited_content) > 1 else ""
+                )
 
             print("Ingestion completed successfully")
             return Response.ok(None)
