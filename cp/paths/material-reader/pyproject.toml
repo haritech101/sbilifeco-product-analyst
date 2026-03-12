@@ -7,6 +7,6 @@ where = ["src"]
 
 [project]
 name = "sbilifeco-paths-material-reader"
-version = "0.1.0"
+version = "0.2.0"
 description = "Paths for material reader microservice"
 dependencies = []
