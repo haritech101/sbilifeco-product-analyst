@@ -1,4 +1,4 @@
-# sbilife/ingest-flow
+# sbilife/productanalyst-ingest-flow
 FROM python:3.14-alpine
 
 WORKDIR /usr/local/ingest-flow
