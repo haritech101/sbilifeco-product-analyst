@@ -7,6 +7,7 @@ services:
         command:
             - --api.insecure=true
             - --providers.docker=true
+            - --providers.docker.constraints=Label(`project`,`product-analyst`)
             - --accesslog=true
             - --log.level=DEBUG
         ports:
@@ -26,6 +27,7 @@ services:
             - COLLECTION_NAME=insurance_material
         restart: always
         labels:
+            - project=product-analyst
             - traefik.http.routers.vectoriser.rule=PathPrefix(`/api/v1/vectors`)
             - traefik.http.routers.vectoriser.service=vectoriser
             - traefik.http.services.vectoriser.loadBalancer.server.url=http://qdrant-gateway
@@ -41,12 +43,14 @@ services:
             - .local/.sqlite:/var/lib/repo
         restart: always
         labels:
+            - project=product-analyst
             - traefik.http.routers.id-name-entities.rule=PathPrefix(`/api/v1/id-name-entities`)
     ingest-flow:
         image: sbilifedockeradmin/productanalyst-ingest-flow:latest
         restart: always
         env_file: .local/ingest-flow.env
         labels:
+            - project=product-analyst
             - traefik.http.routers.ingest-flow--ingest.rule=PathPrefix(`/api/v1/ingest-requests`)
             - traefik.http.routers.ingest-flow--materials.rule=PathPrefix(`/api/v1/material-list-requests`)
     query-flow:
@@ -54,16 +58,19 @@ services:
         restart: always
         env_file: .local/query-flow.env
         labels:
+            - project=product-analyst
             - traefik.http.routers.productanalyst-query-flow.rule=PathPrefix(`/api/v1/material-queries`)
     ingest-flow-ui:
         image: sbilifedockeradmin/ingest-ui:latest
         env_file: .local/ingest-flow-ui.env
         restart: always
         labels:
+            - project=product-analyst
             - traefik.http.routers.prodan-ingest-flow-ui.rule=PathPrefix(`/ingest-ui`)
     query-flow-ui:
         image: sbilifedockeradmin/product-query-ui:latest
         env_file: .local/query-flow-ui.env
         restart: always
         labels:
+            - project=product-analyst
             - traefik.http.routers.prodan-query-flow-ui.rule=PathPrefix(`/product-query-ui`)
